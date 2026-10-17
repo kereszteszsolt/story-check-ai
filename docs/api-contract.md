@@ -4,7 +4,7 @@
 
 ## `GET /api/health`
 
-Returns HTTP 200 with `{"status":"ok"}`. It does not require a configured LLM or call a provider. The same Spring Boot process serves `/` as a minimal static HTML entry point.
+Returns HTTP 200 with `{"status":"ok"}`. It does not require a configured LLM or call a provider. The same Spring Boot process serves the review UI at `/`, with `/styles.css` and `/app.js`.
 
 ## Foundation errors and input boundary
 
@@ -83,7 +83,7 @@ Lengths use Java string length (UTF-16 code units). Invalid structure, blank val
 
 Spring AI sends the same native JSON Schema to both adapters and parses the result into a Java record. Server validation rejects malformed JSON, markdown/prose around JSON, missing/unknown/duplicate fields, wrong types and all size violations with 502 `INVALID_PROVIDER_RESPONSE`. A model that rejects structured-output requests with upstream 400/422 produces 502 `PROVIDER_REJECTED_REQUEST`. There is no repair retry or provider fallback. Other safe failures are 429 `PROVIDER_RATE_LIMITED`, 503 `PROVIDER_UNAVAILABLE` and 504 `PROVIDER_TIMEOUT`.
 
-Responses contain validated fields only; no raw provider reply, headers, API key, reasoning trace or local filesystem data is added. The endpoint does not persist or edit the story. The planned STC-004 frontend will create the **Markdown copy** locally from these fields.
+Responses contain validated fields only; no raw provider reply, headers, API key, reasoning trace or local filesystem data is added. The endpoint does not persist or edit the story. The frontend creates the **Markdown copy** locally from these fields, escaping Markdown/HTML metacharacters and offering a selected text field when clipboard access fails.
 
 ## Data handling
 

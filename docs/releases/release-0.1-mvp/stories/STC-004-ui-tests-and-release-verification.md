@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Implemented
 
 ## User story
 
@@ -18,13 +18,13 @@ STC-003 implemented and verified.
 
 ## Acceptance criteria
 
-- [ ] The Spring Boot-served page loads `GET /api/models` and exposes only available provider/model choices, with clear empty, loading and error states.
-- [ ] A user can enter a story, submit it through `POST /api/reviews`, and read the validated review fields in distinct accessible sections.
-- [ ] **Copy Markdown** produces a readable heading-and-list representation of the displayed review, with feedback for copy failure and no server-side save.
-- [ ] The UI handles mobile widths, keyboard navigation, invalid input, timeout and provider errors without unsafe HTML injection.
-- [ ] Focused JUnit/Mockito/MockMvc tests, a Maven build and Docker Compose startup pass or have recorded blockers; GitHub Actions runs mocked tests/build without API keys or paid model calls.
-- [ ] Verify one actual browser flow using synthetic story text; test real Ollama and/or OpenRouter only when configured and separately approved, recording models and costs/limits where known.
-- [ ] Update the README's planned/runnable claims to match **only verified** behavior, check Mermaid diagrams/links, and record commands/results in release verification before marking any acceptance criterion complete.
+- [x] The Spring Boot-served page loads `GET /api/models` and exposes only available provider/model choices, with clear empty, loading and error states.
+- [x] A user can enter a story, submit it through `POST /api/reviews`, and read the validated review fields in distinct accessible sections.
+- [x] **Copy Markdown** produces a readable heading-and-list representation of the displayed review, with feedback for copy failure and no server-side save.
+- [x] The UI handles mobile widths, keyboard navigation, invalid input, timeout and provider errors without unsafe HTML injection.
+- [x] Focused JUnit/Mockito/MockMvc tests, a Maven build and Docker Compose startup pass or have recorded blockers; GitHub Actions runs mocked tests/build without API keys or paid model calls.
+- [x] Verify one actual browser flow using synthetic story text; test real Ollama and/or OpenRouter only when configured and separately approved, recording models and costs/limits where known.
+- [x] Update the README's planned/runnable claims to match **only verified** behavior, check Mermaid diagrams/links, and record commands/results in release verification before marking any acceptance criterion complete.
 
 ## Out of scope
 

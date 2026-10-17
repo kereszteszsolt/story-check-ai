@@ -2,7 +2,7 @@
 
 ## Status
 
-**In progress — STC-001–003 implemented and checked locally.** STC-004 remains Planned. Structured reviews have deterministic MockMvc/real-adapter HTTP-stub evidence; no live model or story-review UI has been verified, and the release is not complete.
+**STC-001–004 implemented and checked locally.** The responsive UI, Markdown copy/manual fallback and APIs have Maven, loopback-provider, Docker and real Chromium evidence with synthetic responses. Live Ollama/OpenRouter, hosted GitHub Actions execution and public deployment remain unverified. This records local MVP implementation, not a published release or live model compatibility.
 
 ## Evidence table
 
@@ -11,7 +11,7 @@
 | STC-001 | Implemented | 22 JUnit/MockMvc/HTTP tests passed; executable JAR and Docker build passed; Compose config/start passed | Packaged app: 8 HTTP checks passed; visual browser and providers: Not run | Localhost-only port 18081; no native host JVM; local commit separately approved after review |
 | STC-002 | Implemented | 64 tests passed, including 12 real-adapter HTTP-stub cases; executable JAR, Docker build and Compose checks passed | Packaged app: 6 HTTP checks passed; live Ollama/OpenRouter and visual browser: Not run | Explicit selection; no cloud fallback; no final review endpoint; local commit separately approved after review |
 | STC-003 | Implemented | 162 tests passed, including strict converter/MockMvc and 20 real-adapter HTTP-stub cases; executable JAR, Docker build and Compose checks passed | Packaged app: 13 HTTP checks passed; live Ollama/OpenRouter and visual browser: Not run | Shared prompt/schema, bounded validated records, no repair retry/fallback; local commit separately approved after review |
-| STC-004 | Planned | Not run | Not run | UI and CI not implemented |
+| STC-004 | Implemented | 163 Maven tests, executable JAR, independent Docker build, Compose startup, 13 packaged HTTP checks, CI YAML and docs audits passed | Chromium: 20 scenarios with fixed API fixtures, real clipboard and mobile checks passed; live providers: Not run | Hosted CI: Not run; no paid calls; local commit separately approved after review |
 
 ## Recording rules
 
@@ -250,3 +250,74 @@ The complete tracked/untracked diff was reviewed with no blocking findings. Sour
 ### Commit review — 2026-10-17
 
 Reviewed the full tracked diff and all nine new Java files; no blocking findings or unrelated changes. Current Surefire reports confirm 162 tests with zero failures/errors/skips. Application/test sources and configuration are unchanged since the verified Docker build; tests were not repeated for this documentation-only commit preparation. Whitespace, source headers and packaging evidence remain valid. Approved commit message: `feat: implement STC-003 structured story reviews`. The resulting commit identity is recorded in Git history. No push was requested.
+
+## STC-004 — 2026-10-17
+
+The maintainer explicitly requested implementation of STC-004 after STC-003 commit `756e4cb`. That request authorized the UI, deterministic browser checks, CI configuration and release documentation; no live-model request or paid API call was approved. The maintainer separately authorized a local commit subject to successful review on 2026-10-17.
+
+### UI and behavior
+
+Spring Boot now serves `index.html`, `styles.css` and `app.js` from the same process. The responsive page loads only configured choices and requires explicit selection. Empty/loading/model-list failure states disable submission appropriately and offer reload. An OpenRouter selection identifies the provider and possible charges. Story validation matches the 10–4,000-character server boundary; pending requests prevent duplicate submissions and selection/story changes. Requests use a 10-second model-list timeout and a 150-second review timeout (above the server's maximum configured 120 seconds), with no client retry or provider fallback.
+
+Four labelled result sections render model text using `textContent`, not HTML. Zero questions have a clear empty message. Editing input or changing the model invalidates the displayed review. Copy Markdown creates headings/lists locally, escaping model Markdown/HTML metacharacters. Clipboard failure or absence exposes a labelled, selected read-only field for manual copy. Nothing is saved by the app. Labels, described errors, live status messages, visible keyboard focus and focus on the completed review support keyboard use.
+
+### Maven, Docker and HTTP evidence
+
+The existing Java 21 / Maven 3.9.16 / Spring Boot 4.1.1 / Spring AI 2.0.1 environment is unchanged. No dependency, backend provider logic, model setting or general build/configuration header changed.
+
+```bash
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -Dtest=StartupTests,ReviewsApiTests test
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp clean verify
+docker compose config --quiet
+APP_PORT=18081 OLLAMA_MODEL_1= OLLAMA_MODEL_2= OLLAMA_MODEL_3= OPENROUTER_API_KEY= OPENROUTER_MODEL_1= OPENROUTER_MODEL_2= OPENROUTER_MODEL_3= docker compose up --build -d
+docker inspect story-check-ai-app-1 --format '{{json .NetworkSettings.Ports}} user={{.Config.User}} image={{.Image}}'
+python3 /tmp/stc003-smoke.py
+```
+
+The focused suite passed **43 tests**. The full clean verification passed **163 tests, 0 failures, 0 errors, 0 skipped** and packaged the executable JAR. Startup tests verify CSS/JavaScript HTTP content types from the real application and that browser test sources are not served. Docker independently passed the same 163 tests and built image `sha256:2505ec1629cc79e9de407edebe38ff8cad9999861a57baa2464548f328226790`. It runs as `storycheck`, publishes only `127.0.0.1:18081 -> 8080/tcp`, and is left running with all model slots and the key empty. No `.env` was created or edited.
+
+The existing STC-003 Python smoke script passed all **13 HTTP checks** again: HTML, health, empty models, invalid/oversized/unknown-model reviews, method/media type errors, absent fixtures and safe error fallback. Known negative-fixture log messages and the test-agent class-data-sharing warning are unchanged.
+
+Final review corrected the startup test's browser-script URL from an unused `.spec.mjs` name to the actual `review-ui.mjs` filename. The focused rerun passed **all six startup tests** with no failures/errors/skips. Production sources are unchanged, so the verified image and browser evidence above remain current.
+
+```bash
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -Dtest=StartupTests test
+```
+
+### Actual Chromium checks with synthetic responses
+
+Node 24.18.0, existing Playwright 1.62.1 and Chromium 151.0.7922.34 were used only as test tools; there is no Node runtime/build requirement for the app. Missing NSS/NSPR/ALSA libraries came from an already available temporary library directory. The first sandboxed browser launch was blocked by its socket restrictions; the authorized run outside that restriction succeeded. No host packages were installed.
+
+```bash
+/home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node --check src/main/resources/static/app.js
+/home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node --check browser-tests/review-ui.mjs
+PLAYWRIGHT_MODULE=/tmp/open-nook-onk001-browser/node_modules/playwright LD_LIBRARY_PATH=/tmp/task-flow-svg-check/browser-libs/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node browser-tests/review-ui.mjs
+```
+
+All **20 scenarios passed** against the Spring Boot-served page. The first uses the real empty `/api/models` response; generation scenarios intercept API requests in the browser and supply fixed responses. These are real browser UI checks, not a live model or browser-to-provider end-to-end result. External origins are blocked by the harness.
+
+Coverage: loading/empty/failing/malformed model lists and reload; explicit cloud selection/cost notice; literal brace/Unicode story payload; keyboard Tab/Enter flow and completed-review focus; safe literal HTML/script-like output; zero/nonzero questions; real clipboard write/read and denied/absent clipboard manual fallback; input limits without a request; pending controls/one submission; stale result reset; 422/429/502/503/504 messages; network/invalid JSON-contract output; accelerated client abort; long content/manual copy at 320px and 390px with no horizontal overflow. No uncaught browser errors occurred.
+
+Desktop (1366px) and mobile screenshots were saved to `/tmp/stc004-browser-artifacts/`; desktop and 390px images were visually inspected. They contain synthetic fixture text, including deliberate HTML-injection test strings. They are not live AI output or promotional assets.
+
+### CI, diagrams, links and review
+
+`.github/workflows/verify.yml` defines push/PR Maven verification on Java 21 with read-only repository permissions, no persisted checkout credentials, blank production model/key settings and no secret references. It uses the verified official [checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1) and [setup-java v6.1.0](https://github.com/actions/setup-java/releases/tag/v6.1.0) releases. A Python YAML structural audit passed. The identical Maven command passed locally and in Docker. **Hosted GitHub Actions: Not run** because no push was authorized; no hosted-run claim is made. Browser regression remains an optional local check.
+
+```bash
+PATH=/home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin:$PATH npm install --prefix /tmp/stc004-doc-check --no-save --no-audit --no-fund mermaid@11.12.1
+LD_LIBRARY_PATH=/tmp/task-flow-svg-check/browser-libs/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node /tmp/stc004-check-diagrams.cjs
+git diff HEAD --check
+```
+
+The first Mermaid check found a pre-existing sequence-diagram semicolon that was parsed as a statement separator. Its label now says "Show review and copy Markdown". All **three Mermaid diagrams parsed and rendered** with Mermaid 11.12.1 in Chromium afterward. The temporary checker writes SVGs under `/tmp`; the npm tools are outside the repository and runtime image. Python audits passed for local Markdown link targets, all 33 source SPDX notices, header-free general configuration/CI files, new-file whitespace, and byte-for-byte static assets in the JAR. Browser tooling, fixtures and secrets are not packaged.
+
+README, architecture, roadmap, model/API/testing guides and release status now describe implemented behavior with these explicit evidence limits. The final diff review found no blocking issue. No later story/release, database, framework, persisted history or public deployment was added.
+
+### Unverified and approval boundary
+
+**Live Ollama: Not run. Live OpenRouter: Not run.** No model was downloaded or called, no real cloud key was used, and no billable API charge occurred. Live model compatibility/quality, host-Ollama networking, native host Java startup, browsers other than Chromium, a hosted CI run and public deployment remain unverified.
+
+### Commit review — 2026-10-17
+
+Reviewed all 17 changed/new files with no blocking findings or unrelated changes. Current Surefire reports confirm 163 tests with zero failures/errors/skips, and packaged UI assets match the current sources byte for byte. The 20 browser scenarios, 13 HTTP checks and Docker verification above remain applicable; application and test sources are unchanged since their successful checks, so tests were not repeated for this documentation-only commit preparation. New-file headers/whitespace, CI configuration and local documentation links passed review. Approved commit message: `feat: implement STC-004 review UI and verification`. The resulting commit identity is recorded in Git history. No push was requested.

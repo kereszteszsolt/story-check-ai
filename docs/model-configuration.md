@@ -1,6 +1,6 @@
 # Model configuration
 
-**Status: STC-002 configuration/adapters and STC-003 structured reviews implemented.** The backend maps `.env.example` settings through `storycheck.ai.*` properties; Compose passes them only to the app container. Native Maven/Java startup reads process environment and does not automatically load `.env`. No live model configuration has been verified yet. The model selector UI remains planned in STC-004.
+**Status: Configuration, adapters, structured reviews and model selector implemented.** The backend maps `.env.example` settings through `storycheck.ai.*` properties; Compose passes them only to the app container. Native Maven/Java startup reads process environment and does not automatically load `.env`. No live model configuration has been verified yet. The browser loads only the backend choices, requires explicit selection, and identifies OpenRouter usage as potentially billable.
 
 Configuration is read at startup; restart the app after changing environment values.
 
@@ -13,7 +13,7 @@ Up to three model identifiers per provider are configured by hand:
 | Ollama | Ollama URL and non-empty model ID | `OLLAMA_MODEL_1`, `_2`, `_3` |
 | OpenRouter | Server-only API key and non-empty model ID | `OPENROUTER_MODEL_1`, `_2`, `_3` |
 
-Blank values are ignored; IDs are trimmed and deduplicated within each provider in slot order. Only the first three slots per provider are considered. There is no model discovery or download. If no choices remain, the endpoint returns `{"models":[]}`; the empty-model UI belongs to STC-004.
+Blank values are ignored; IDs are trimmed and deduplicated within each provider in slot order. Only the first three slots per provider are considered. There is no model discovery or download. If no choices remain, the endpoint returns `{"models":[]}`; the page explains the missing configuration, disables submission and offers **Reload models**.
 
 The `POST /api/reviews` service uses `ProviderChatService` with an explicit `provider` and exact allowlisted `model`. Unknown providers, model IDs, mismatched provider/model pairs and disabled OpenRouter choices produce `MODEL_NOT_AVAILABLE` (422) before any provider call.
 

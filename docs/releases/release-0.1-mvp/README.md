@@ -2,7 +2,7 @@
 
 ## Status
 
-**In progress — STC-001–003 implemented.** The app has a minimal page, health/model-list/review APIs, explicit Spring AI adapters, a shared JSON Schema/validated review record, deterministic tests and one-service Docker packaging. STC-004 remains Planned. The review UI and CI do not exist yet; live-provider compatibility remains untested. See verification for measured results and limitations.
+**STC-001–004 implemented and verified locally.** The app has a responsive review UI, Markdown copy/manual fallback, health/model/review APIs, explicit Spring AI adapters, a shared JSON Schema/validated review record, deterministic tests and one-service Docker packaging. The GitHub Actions workflow is configured. Live model compatibility, a hosted workflow run and public deployment remain unverified. See verification for measured results and limitations; no published release is claimed.
 
 ## Goal
 
@@ -23,6 +23,6 @@ Deliver one small Spring Boot web app: choose a configured Ollama/OpenRouter mod
 | [STC-001](stories/STC-001-spring-boot-foundation.md) | Spring Boot foundation, build, Compose and health | Implemented |
 | [STC-002](stories/STC-002-configured-llm-providers.md) | Explicit Ollama/OpenRouter model registry and connection | Implemented |
 | [STC-003](stories/STC-003-structured-story-review.md) | Structured story review prompt, Java records and safe errors | Implemented |
-| [STC-004](stories/STC-004-ui-tests-and-release-verification.md) | One-page UI, Markdown copy, tests, CI and truthful docs | Planned |
+| [STC-004](stories/STC-004-ui-tests-and-release-verification.md) | One-page UI, Markdown copy, tests, CI and truthful docs | Implemented |
 
 [Verification](verification.md) records actual approved checks; later stories stay unverified until implemented.

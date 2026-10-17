@@ -2,7 +2,7 @@
 
 ## Status
 
-Release 0.1 is **in progress** with STC-001–003 foundation, providers and structured reviews; STC-004 remains Planned. Follow the stories in their listed order after explicit approval. See the release verification for actual implementation and runtime evidence.
+Release 0.1's **STC-001–004 are implemented and verified locally**, including the UI and Markdown copy. Live model compatibility, hosted CI and public deployment remain unverified. Any later work requires explicit approval; see release verification for actual evidence.
 
 ## Story format
 

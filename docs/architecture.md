@@ -1,6 +1,6 @@
-# Architecture — planned Release 0.1
+# Architecture — Release 0.1
 
-**Status: Planned.** This is the target structure for one small Spring Boot application, not a description of implemented files.
+**Status: Implemented and verified locally.** One Spring Boot application serves the plain HTML/CSS/JavaScript UI and REST API. Provider adapters are checked with fixed local fixtures; no live model compatibility or public deployment is claimed.
 
 ```mermaid
 flowchart TD
@@ -32,7 +32,7 @@ flowchart TD
 - **OpenRouter:** optional outbound HTTPS request only when explicitly selected. The server owns the API key and handles errors/rate limits.
 - **Storage:** none. The app keeps no server-side conversations, story history, user accounts, or saved reviews.
 
-## Target flow
+## Request flow
 
 1. `GET /api/models` exposes configured allowlisted model labels and opaque selectors, not keys or unrestricted model routing.
 2. `POST /api/reviews` receives the story and selected model; the API validates the request.
@@ -43,9 +43,9 @@ flowchart TD
 
 ## Deployment
 
-After STC-001, Compose will build a **single** Spring Boot container and publish only the web port to `127.0.0.1` by default. An optional `host.docker.internal`/`host-gateway` mapping will be needed on some Linux installations to reach host-installed Ollama. Avoid publicly exposing the Ollama port. Native Spring Boot development can point at host `localhost:11434` instead.
+Compose builds a **single** Spring Boot container and publishes only the web port to `127.0.0.1` by default. The `host.docker.internal`/`host-gateway` mapping is included; a loopback-only host Ollama may still require separate network configuration on Linux. Host-Ollama connectivity remains untested. Native Spring Boot development can point at host `localhost:11434` instead.
 
-No `db`, `web`, `worker`, scheduler, or LLM container and no named volumes are planned.
+There is no `db`, separate `web`, worker, scheduler or LLM container, and no named data volume.
 
 ## Non-goals
 

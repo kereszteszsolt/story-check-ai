@@ -1,6 +1,6 @@
 # Testing and verification plan
 
-**Status: STC-001–003 foundation, model/provider and structured-review checks implemented; full UI/CI checks remain planned in STC-004.** Run `mvn -B -ntp verify` with Java 21, or use the Docker build, which runs the same verification. Provider checks use Mockito and loopback HTTP stubs with fixed responses; the real Spring AI adapters never contact an external model during tests. Actual commands and outcomes are recorded in the release verification.
+**Status: STC-001–004 implemented with local Maven, Docker and Chromium evidence.** Run `mvn -B -ntp verify` with Java 21, or use the Docker build, which runs the same verification. Provider checks use Mockito and loopback HTTP stubs with fixed responses; the real Spring AI adapters never contact an external model during tests. Actual commands and outcomes are recorded in the release verification. The hosted GitHub Actions run remains unverified.
 
 ## Smallest useful automated checks (after implementation)
 
@@ -9,11 +9,27 @@
 | Spring MVC | Health/model-list contracts and review requests: required fields, strict JSON, story bounds, unknown selections and safe errors |
 | Configuration | Empty slots, up to three per provider, duplicate IDs, unknown model rejection, missing OpenRouter key |
 | Spring AI service | Fixed responses, identical typed output and native wire schema for both providers, literal story, zero questions, field/list bounds, malformed output, timeout/provider failures and no repair retry/fallback |
-| UI | Manual keyboard flow, empty/loading/error states, copy-to-clipboard fallback, mobile width |
+| UI | Chromium keyboard flow, empty/loading/error states, clipboard success/manual fallback, literal untrusted text and mobile widths |
 | Packaging | Maven unit tests/build, Docker Compose validation and localhost-only port binding |
 | CI | Maven test + package using mocked providers only (no secret or billable request) |
 
 No assertion should depend on a model generating a particular sentence. Provider tests must be deterministic and offline by default.
+
+## Optional browser regression
+
+`browser-tests/review-ui.mjs` uses Playwright only as a development test tool; no Node.js runtime or frontend build is needed by the application. Run it against a local app with all six model slots and the OpenRouter key empty (the first check verifies that real empty configuration). The remaining scenarios intercept API calls in the browser with synthetic fixtures and cannot call an external provider.
+
+With Node.js 24 and the [Playwright browser/system libraries](https://playwright.dev/docs/browsers) available:
+
+```bash
+npm install --prefix /tmp/storycheck-browser --no-save playwright@1.62.1
+node /tmp/storycheck-browser/node_modules/playwright/cli.js install chromium
+STC_BASE_URL=http://127.0.0.1:18081 PLAYWRIGHT_MODULE=/tmp/storycheck-browser/node_modules/playwright node browser-tests/review-ui.mjs
+```
+
+Screenshots go to `/tmp/stc004-browser-artifacts` by default; override `STC_BROWSER_ARTIFACTS` if needed. They show fixed fixture content, not live model output. The script checks real clipboard access plus denied/unavailable clipboard fallback, and accelerates the client timeout only within its test page.
+
+`.github/workflows/verify.yml` runs Maven verification on push and pull request with Java 21, read-only repository permissions, blank production model/key settings and no repository secrets. Browser regression is an optional local check. A local command passing does not prove that the hosted workflow ran.
 
 ## Optional runtime smoke checks
 

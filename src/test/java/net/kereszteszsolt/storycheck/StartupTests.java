@@ -34,6 +34,17 @@ class StartupTests {
     }
 
     @Test
+    void browserAssetsAreServedByTheSameApplication() throws Exception {
+        HttpResponse<String> css = get("/styles.css", "text/css");
+        assertEquals(200, css.statusCode());
+        assertTrue(css.headers().firstValue("Content-Type").orElseThrow().startsWith("text/css"));
+        HttpResponse<String> javascript = get("/app.js", "*/*");
+        assertEquals(200, javascript.statusCode());
+        assertTrue(javascript.headers().firstValue("Content-Type").orElseThrow().contains("javascript"));
+        assertEquals(404, get("/browser-tests/review-ui.mjs", "*/*").statusCode());
+    }
+
+    @Test
     void missingRoutesStayJsonEvenForBrowserRequests() throws Exception {
         HttpResponse<String> response = get("/api/missing", "text/html");
         assertEquals(404, response.statusCode());
