@@ -13,7 +13,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import com.sun.net.httpserver.HttpServer;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
+import net.kereszteszsolt.storycheck.review.ReviewOutputConverter;
+import net.kereszteszsolt.storycheck.review.ReviewRequest;
+import net.kereszteszsolt.storycheck.review.ReviewTestData;
+import net.kereszteszsolt.storycheck.review.StoryReviewService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -23,12 +31,25 @@ import tools.jackson.databind.json.JsonMapper;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProviderWireTests {
+    private static final JsonMapper JSON = JsonMapper.builder().build();
+    private static ValidatorFactory validation;
     private HttpServer server;
     private ExecutorService executor;
     private final BlockingQueue<Request> requests = new LinkedBlockingQueue<>();
     private volatile int status = 200;
     private volatile long delayMs;
     private volatile boolean responseSent;
+    private volatile String completionText = "fixed answer";
+
+    @BeforeAll
+    static void createValidator() {
+        validation = Validation.buildDefaultValidatorFactory();
+    }
+
+    @AfterAll
+    static void closeValidator() {
+        validation.close();
+    }
 
     @BeforeEach
     void startStub() throws IOException {
@@ -46,13 +67,13 @@ class ProviderWireTests {
                 String body = status != 200 ? "{\"error\":{\"message\":\"private-key raw-story\"}}"
                         : path.startsWith("/ollama/") ? """
                         {"model":"second","created_at":"2026-10-17T00:00:00Z",
-                         "message":{"role":"assistant","content":"fixed answer"},"done":true,
+                         "message":{"role":"assistant","content":%s},"done":true,
                          "done_reason":"stop","prompt_eval_count":1,"eval_count":1}
-                        """ : """
+                        """.formatted(JSON.writeValueAsString(completionText)) : """
                         {"id":"stub","object":"chat.completion","created":1,"model":"vendor/second",
-                         "choices":[{"index":0,"message":{"role":"assistant","content":"fixed answer"},
+                         "choices":[{"index":0,"message":{"role":"assistant","content":%s},
                          "finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}}
-                        """;
+                        """.formatted(JSON.writeValueAsString(completionText));
                 byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
                 exchange.sendResponseHeaders(status, bytes.length);
@@ -88,6 +109,59 @@ class ProviderWireTests {
 
     private String model(String provider) {
         return provider.equals("ollama") ? "second" : "vendor/second";
+    }
+
+    private StoryReviewService reviews(ProviderChatService providers) {
+        var validator = validation.getValidator();
+        return new StoryReviewService(providers, new ReviewOutputConverter(validator), validator);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ollama", "openrouter"})
+    void structuredReviewsUseTheSameNativeSchemaAndLiteralStoryOnBothAdapters(String provider) throws Exception {
+        completionText = ReviewTestData.VALID_JSON;
+        try (var providers = service()) {
+            var review = reviews(providers).review(new ReviewRequest(provider, model(provider), ReviewTestData.STORY));
+            assertEquals("The story is clear and testable.", review.summary());
+            assertEquals(List.of(), review.clarificationQuestions());
+            assertEquals(1, requests.size());
+            var json = JSON.readTree(requests.peek().body());
+            assertEquals(model(provider), json.get("model").asString());
+            assertEquals("system", json.get("messages").get(0).get("role").asString());
+            assertTrue(json.get("messages").get(0).get("content").asString().contains("fill a quota"));
+            assertEquals(ReviewTestData.STORY, json.get("messages").get(1).get("content").asString());
+            var schema = provider.equals("ollama") ? json.get("format")
+                    : json.get("response_format").get("json_schema").get("schema");
+            assertEquals(JSON.readTree(new ReviewOutputConverter(validation.getValidator()).getJsonSchema()), schema);
+            assertEquals(4, schema.get("required").size());
+            assertFalse(schema.get("additionalProperties").asBoolean());
+            assertEquals(0, schema.get("properties").get("clarificationQuestions").get("minItems").asInt());
+            if (provider.equals("openrouter")) {
+                assertEquals("json_schema", json.get("response_format").get("type").asString());
+                assertTrue(json.get("response_format").get("json_schema").get("strict").asBoolean());
+                assertFalse(json.get("provider").get("allow_fallbacks").asBoolean());
+                assertEquals("0", requests.peek().retries());
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"ollama,invalid", "openrouter,invalid", "ollama,empty", "openrouter,empty",
+            "ollama,unsupported", "openrouter,unsupported"})
+    void invalidOrUnsupportedStructuredResultsFailWithoutRepairRetries(String provider, String scenario) throws Exception {
+        completionText = scenario.equals("empty") ? "" : "{\"summary\":\"private-key raw-story\"}";
+        status = scenario.equals("unsupported") ? 400 : 200;
+        try (var providers = service()) {
+            var failure = assertThrows(ProviderException.class,
+                    () -> reviews(providers).review(new ReviewRequest(provider, model(provider), ReviewTestData.STORY)));
+            assertEquals(scenario.equals("unsupported") ? ProviderException.Reason.REJECTED
+                    : ProviderException.Reason.INVALID_RESPONSE, failure.reason());
+            assertNull(failure.getCause());
+            assertFalse(failure.toString().contains("private-key"));
+            assertEquals(1, requests.size());
+            assertEquals(provider.equals("ollama") ? "/ollama/api/chat" : "/api/v1/chat/completions",
+                    requests.peek().path());
+        }
     }
 
     @ParameterizedTest

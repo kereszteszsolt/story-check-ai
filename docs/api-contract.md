@@ -1,6 +1,6 @@
 # REST contract
 
-**Status: Health, error foundation and model listing implemented.** `/api/reviews` remains an STC-003 specification and currently returns 404.
+**Status: Health, model listing and structured reviews implemented.** Both providers share one validated review contract. Deterministic mocks/local HTTP stubs verify the API and adapters; live model compatibility remains untested.
 
 ## `GET /api/health`
 
@@ -20,7 +20,7 @@ Errors use `application/json` and the shape `{"code":"INVALID_REQUEST","message"
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Unsupported request format |
 | 500 | `INTERNAL_ERROR` | Unexpected failure |
 
-All bodies read through Spring MVC `@RequestBody` are bounded to 65,536 bytes before deserialization, even without a reliable `Content-Length`. Jakarta validation is available; its invalid/missing/oversized DTO inputs are verified with a test-only controller, absent from the shipped app. The health endpoint has no input DTO. Domain constraints below remain planned for STC-003. Internal provider failures use the safe mappings in [Model configuration](model-configuration.md); their API rendering is checked with test-only routes, absent from the shipped app.
+All bodies read through Spring MVC `@RequestBody` are bounded to 65,536 bytes before deserialization, even without a reliable `Content-Length`. JSON requests reject unknown/duplicate fields, trailing documents, missing/null required fields and incorrect value types; numbers and booleans are not converted to strings. The review endpoint validates the domain constraints below before calling any model. Provider failures use the safe mappings in [Model configuration](model-configuration.md).
 
 ## `GET /api/models`
 
@@ -62,14 +62,28 @@ Response example (mock/example text, **not a measured model output**):
 }
 ```
 
-Target constraints:
+The request must be a JSON object with exactly these three nonblank strings:
 
-- The story is plain text with a documented maximum length (target: 4,000 characters) and a sensible minimum; reject blank or oversized input.
-- The provider is `ollama` or `openrouter`, and the model must match an enabled server-side allowlist entry for that provider.
-- `summary` is short; all arrays contain strings with bounded item counts and lengths. Allow **zero clarification questions** if nothing material is missing; do not invent weaknesses to fill a quota.
-- Return the same shape for either provider; do not add raw LLM replies, provider headers, API keys, chain-of-thought, or local filesystem data.
-- Handle invalid request (400), unavailable model/provider (422 or 503), rate limit (429), timeout (504), and invalid model JSON (502 or 422) with stable, non-sensitive error codes. Final mappings should be fixed and tested in STC-003.
-- The frontend creates the **Markdown copy** locally from validated fields. This endpoint does not write any data.
+| Field | Constraint |
+| --- | --- |
+| `provider` | At most 16 characters; exact enabled `ollama` or `openrouter` selection |
+| `model` | At most 200 characters; exact allowlisted ID for that provider |
+| `story` | 10–4,000 characters of plain text; retained unchanged, including literal braces |
+
+Lengths use Java string length (UTF-16 code units). Invalid structure, blank values and size violations return 400 `INVALID_REQUEST`; a well-formed but unknown/disabled provider/model pair returns 422 `MODEL_NOT_AVAILABLE`. Neither reaches a provider. A valid request returns HTTP 200 with exactly these fields:
+
+| Field | Constraint |
+| --- | --- |
+| `summary` | Nonblank string, at most 600 characters |
+| `acceptanceCriteria` | 1–8 nonblank strings, at most 500 characters each |
+| `clarificationQuestions` | 0–6 nonblank strings, at most 300 characters each |
+| `suggestedTests` | 1–8 nonblank strings, at most 500 characters each |
+
+**Zero clarification questions** are valid when nothing material is missing. One shared prompt asks for concise feedback in the story's language, preserving its intent and avoiding invented business rules or questions to fill a quota. This is guidance for the model, not a guarantee of semantic correctness.
+
+Spring AI sends the same native JSON Schema to both adapters and parses the result into a Java record. Server validation rejects malformed JSON, markdown/prose around JSON, missing/unknown/duplicate fields, wrong types and all size violations with 502 `INVALID_PROVIDER_RESPONSE`. A model that rejects structured-output requests with upstream 400/422 produces 502 `PROVIDER_REJECTED_REQUEST`. There is no repair retry or provider fallback. Other safe failures are 429 `PROVIDER_RATE_LIMITED`, 503 `PROVIDER_UNAVAILABLE` and 504 `PROVIDER_TIMEOUT`.
+
+Responses contain validated fields only; no raw provider reply, headers, API key, reasoning trace or local filesystem data is added. The endpoint does not persist or edit the story. The planned STC-004 frontend will create the **Markdown copy** locally from these fields.
 
 ## Data handling
 

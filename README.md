@@ -5,13 +5,13 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-D22128?style=flat-square)](LICENSE)
 ![Status: MVP in progress](https://img.shields.io/badge/status-MVP%20in%20progress-64748b?style=flat-square)
 ![Java 21](https://img.shields.io/badge/Java-21-ED8B00?style=flat-square)
-![Spring AI](https://img.shields.io/badge/Spring%20AI-planned-6DB33F?style=flat-square)
+![Spring AI](https://img.shields.io/badge/Spring%20AI-2.0.1-6DB33F?style=flat-square)
 
-**StoryCheck AI** is a small, self-hosted **user story review demo** planned with Java, Spring Boot, and Spring AI. Paste a story, choose a configured Ollama or OpenRouter model, and request suggestions for **acceptance criteria**, **clarification questions**, and **test cases**. Review the result on one page and copy it as Markdown.
+**StoryCheck AI** is a small, self-hosted **user story review demo** built with Java, Spring Boot, and Spring AI. Its API accepts a story and a configured Ollama or OpenRouter model, then returns validated suggestions for **acceptance criteria**, **clarification questions**, and **test cases**. The planned one-page UI will display the review and copy it as Markdown.
 
-> **Repository status: Release 0.1 in progress.** STC-001 provides a minimal HTML page, health API and Docker packaging. STC-002 adds `GET /api/models` and explicit Ollama/OpenRouter adapters, verified with mocks and local HTTP stubs. Live-provider compatibility remains untested. Story reviews, the review UI and CI remain Planned in STC-003–004. The feature descriptions and diagrams below describe that target. Implementation requires explicit story-by-story approval.
+> **Repository status: Release 0.1 in progress.** STC-001–003 provide a minimal HTML page, health/model-list APIs, explicit Ollama/OpenRouter adapters and `POST /api/reviews` with a shared prompt, JSON Schema and validated Java record. Deterministic mocks/local HTTP stubs verify the review flow; live-provider compatibility remains untested. The review UI, Markdown copy and CI remain Planned in STC-004. The user journey and diagrams below include that target. Implementation requires explicit story-by-story approval.
 
-## Planned features — Release 0.1
+## Release 0.1 features
 
 - **One-page review:** paste a user story or concise requirement; view a structured review and copy Markdown.
 - **Explicit model selection:** at most **three Ollama** and **three OpenRouter** models configured in `.env`; blank slots are hidden.
@@ -75,13 +75,13 @@ More detail: [Architecture](docs/architecture.md) · [API contract](docs/api-con
 | --- | --- |
 | Application | Java 21, Spring Boot 4.1.1, Spring Web MVC |
 | AI integration | Spring AI 2.0.1 `ChatClient`, Ollama and OpenAI-compatible OpenRouter adapters |
-| Output | Planned: Java review records, Structured Outputs / JSON Schema, server-side validation |
+| Output | Java review records, provider-native JSON Schema, strict parsing and server-side validation |
 | UI | HTML5, CSS3, Vanilla JavaScript (`src/main/resources/static/`) |
 | Build & tests | Maven 3.6.3+ (3.x), JUnit Jupiter, Spring MockMvc; Docker build uses Maven 3.9.16 |
 | Packaging | Docker, Docker Compose (one app service; external AI providers) |
 | Quality | GitHub Actions planned (focused, mocked tests and build) |
 
-`pom.xml` pins Java 21, Spring Boot 4.1.1 and the Spring AI 2.0.1 BOM. The [official compatibility guide](https://docs.spring.io/spring-ai/reference/getting-started.html) supports Spring AI 2.0.x with Boot 4.0.x/4.1.x; [Boot requirements](https://docs.spring.io/spring-boot/4.1/system-requirements.html) include Java 21 and Maven 3.6.3+. Maven Enforcer requires a Java 21 JDK and Maven 3.x. Provider modules are configured directly so missing OpenRouter credentials do not trigger failing auto-configuration. Compatibility of structured output remains model-dependent and must be tested in later stories.
+`pom.xml` pins Java 21, Spring Boot 4.1.1 and the Spring AI 2.0.1 BOM. The [official compatibility guide](https://docs.spring.io/spring-ai/reference/getting-started.html) supports Spring AI 2.0.x with Boot 4.0.x/4.1.x; [Boot requirements](https://docs.spring.io/spring-boot/4.1/system-requirements.html) include Java 21 and Maven 3.6.3+. Maven Enforcer requires a Java 21 JDK and Maven 3.x. Provider modules are configured directly so missing OpenRouter credentials do not trigger failing auto-configuration. Compatibility of structured output remains model-dependent; no live model has been tested.
 
 The Maven coordinates are `net.kereszteszsolt:story-check-ai`; Java sources and tests use the `net.kereszteszsolt.storycheck` package.
 
@@ -133,7 +133,7 @@ Open `http://localhost:8080` (or your `APP_PORT`) for the minimal page. `curl --
 
 Ollama remains host-installed and outside Compose. Its default endpoint is `http://localhost:11434` for native development and `http://host.docker.internal:11434` from Docker. Compose includes the Linux `host-gateway` mapping, but a host Ollama bound only to loopback may still be unreachable from a Linux bridge. Any host bind/firewall adjustment requires separate configuration; live host connectivity remains untested. No models are downloaded automatically.
 
-The API returns safe JSON errors (`code`, `message`). Requests deserialized through `@RequestBody` have a 65,536-byte limit. The internal provider gateway validates exact provider/model pairs against the enabled allowlist, uses bounded timeouts (1,000–120,000 ms), and makes no automatic retries or provider fallback. Its transport checks use fixed responses; no review endpoint or model selector UI exists yet. See [API contract](docs/api-contract.md) and the actual [verification results](docs/releases/release-0.1-mvp/verification.md).
+The API returns safe JSON errors (`code`, `message`). Requests deserialized through `@RequestBody` have a 65,536-byte limit. `POST /api/reviews` accepts exactly `provider`, `model` and a nonblank 10–4,000-character `story`. It returns `summary`, `acceptanceCriteria`, `clarificationQuestions` (possibly empty) and `suggestedTests`, with strict field/list bounds. The provider gateway validates the exact configured selection, uses bounded timeouts (1,000–120,000 ms), and makes no automatic retries or provider fallback. The model selector UI remains planned. See the [API contract](docs/api-contract.md) for request/response examples and the actual [verification results](docs/releases/release-0.1-mvp/verification.md).
 
 ## Development workflow
 
@@ -142,12 +142,12 @@ The repo uses lightweight **story-driven AI-assisted development**. Read [AGENTS
 | Guide | Purpose |
 | --- | --- |
 | [Architecture](docs/architecture.md) | Boundaries and Mermaid diagrams |
-| [API contract](docs/api-contract.md) | Planned endpoints and response shape |
+| [API contract](docs/api-contract.md) | Implemented endpoints, request/response bounds and safe errors |
 | [Model configuration](docs/model-configuration.md) | Environment variables, provider selection, secrets |
 | [Testing](docs/testing.md) | Focused checks and approved real-model smoke tests |
 | [Roadmap](docs/roadmap.md) | Single planned release and story links |
 | [Release 0.1](docs/releases/release-0.1-mvp/README.md) | STC-001–004 and acceptance criteria |
-| [Verification](docs/releases/release-0.1-mvp/verification.md) | Actual results once implementation starts |
+| [Verification](docs/releases/release-0.1-mvp/verification.md) | Actual commands, results and untested runtime boundaries |
 | [Future ideas](docs/future.md) | Optional possibilities, not planned stories |
 | [Codex roles & skills](.codex/README.md) | Minimal agent/skill selection |
 

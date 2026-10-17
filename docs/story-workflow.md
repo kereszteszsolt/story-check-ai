@@ -2,7 +2,7 @@
 
 ## Status
 
-Release 0.1 is **in progress** with the STC-001 application foundation and STC-002 provider configuration; STC-003–004 remain Planned. Follow the stories in their listed order after explicit approval. See the release verification for actual implementation and runtime evidence.
+Release 0.1 is **in progress** with STC-001–003 foundation, providers and structured reviews; STC-004 remains Planned. Follow the stories in their listed order after explicit approval. See the release verification for actual implementation and runtime evidence.
 
 ## Story format
 

@@ -2,7 +2,7 @@
 
 ## Repository status and scope
 
-**StoryCheck AI has an application foundation and STC-002 provider configuration.** Release 0.1 is in progress; STC-003–004 remain Planned. The app serves a minimal HTML page, health and model-list APIs, with Spring AI adapters, deterministic tests and Docker packaging; see release verification for actual evidence and untested live providers. The approved target is one Java 21 Spring Boot app with built-in HTML/CSS/JS, Spring AI, at most three configured Ollama plus three OpenRouter models, validated JSON/Java record reviews, and Docker packaging. No database, frontend framework, RAG, tool calling, or agent runtime.
+**StoryCheck AI has STC-001–003 application, provider and structured-review APIs.** Release 0.1 is in progress; STC-004 remains Planned. The app serves a minimal HTML page, health/model-list/review APIs, with Spring AI adapters, validated Java record output, deterministic tests and Docker packaging; see release verification for actual evidence and untested live providers. The approved target is one Java 21 Spring Boot app with built-in HTML/CSS/JS, Spring AI, at most three configured Ollama plus three OpenRouter models, validated JSON/Java record reviews, and Docker packaging. No database, frontend framework, RAG, tool calling, or agent runtime.
 
 ## Read minimal relevant context
 

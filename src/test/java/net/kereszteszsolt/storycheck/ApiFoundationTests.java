@@ -68,7 +68,7 @@ class ApiFoundationTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/missing", "/api/reviews"})
+    @ValueSource(strings = {"/api/missing"})
     void unimplementedRoutesAreNotFound(String path) throws Exception {
         mvc.perform(get(path))
                 .andExpect(status().isNotFound())

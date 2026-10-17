@@ -1,6 +1,6 @@
 # Model configuration
 
-**Status: STC-002 server-side configuration and adapters.** The backend maps `.env.example` settings through `storycheck.ai.*` properties; Compose passes them only to the app container. Native Maven/Java startup reads process environment and does not automatically load `.env`. No live model configuration has been verified yet. The model selector and review endpoint remain planned.
+**Status: STC-002 configuration/adapters and STC-003 structured reviews implemented.** The backend maps `.env.example` settings through `storycheck.ai.*` properties; Compose passes them only to the app container. Native Maven/Java startup reads process environment and does not automatically load `.env`. No live model configuration has been verified yet. The model selector UI remains planned in STC-004.
 
 Configuration is read at startup; restart the app after changing environment values.
 
@@ -15,7 +15,7 @@ Up to three model identifiers per provider are configured by hand:
 
 Blank values are ignored; IDs are trimmed and deduplicated within each provider in slot order. Only the first three slots per provider are considered. There is no model discovery or download. If no choices remain, the endpoint returns `{"models":[]}`; the empty-model UI belongs to STC-004.
 
-The internal `ProviderChatService` accepts an explicit `provider` and exact allowlisted `model`. Unknown providers, model IDs, mismatched provider/model pairs and disabled OpenRouter choices produce `MODEL_NOT_AVAILABLE` (422) before any provider call. The STC-003 review endpoint will use this boundary; STC-002 adds no public generation endpoint.
+The `POST /api/reviews` service uses `ProviderChatService` with an explicit `provider` and exact allowlisted `model`. Unknown providers, model IDs, mismatched provider/model pairs and disabled OpenRouter choices produce `MODEL_NOT_AVAILABLE` (422) before any provider call.
 
 ## Important environment settings
 
@@ -39,7 +39,7 @@ OpenRouter may charge for requests. The user must explicitly choose an OpenRoute
 
 CI and unit tests must use mocks. Live OpenRouter smoke tests require a real key and the user's separate approval.
 
-The transport gateway accepts at most 16,000 prompt characters, requests at most 1,024 output tokens, and rejects blank output or output over 32,768 characters. These are internal transport limits; the final user-story and structured-review limits are defined in STC-003. No tools or callbacks are registered. Failure messages contain fixed codes/text, without provider bodies, headers, endpoints, credentials or raw prompts.
+The transport gateway accepts at most 16,000 characters including the review instructions and converter format, requests at most 1,024 output tokens, and rejects blank output or output over 32,768 characters. The strict review parser also bounds JSON nesting and validates field/item limits from the [API contract](api-contract.md). No schema-repair retries, tools or callbacks are enabled. Failure messages contain fixed codes/text, without provider bodies, headers, endpoints, credentials or raw prompts.
 
 | HTTP | Code | Condition |
 | --- | --- | --- |
@@ -48,10 +48,10 @@ The transport gateway accepts at most 16,000 prompt characters, requests at most
 | 429 | `PROVIDER_RATE_LIMITED` | Upstream 429 |
 | 503 | `PROVIDER_UNAVAILABLE` | Connection failure, authentication failure, missing upstream model or server failure |
 | 502 | `PROVIDER_REJECTED_REQUEST` | Upstream 400/422 |
-| 502 | `INVALID_PROVIDER_RESPONSE` | Blank or oversized generated content |
+| 502 | `INVALID_PROVIDER_RESPONSE` | Blank, oversized, malformed or contract-invalid generated content |
 
 ## Spring AI version/behavior checkpoint
 
-STC-001 pins compatible Spring Boot and Spring AI versions. STC-002 checks OpenRouter base URL/path, authorization and model selection using the real adapter against a local HTTP stub. That does not prove compatibility with any live OpenRouter model. STC-003 verifies `.entity(JavaRecord.class)` typed responses, server-side validation, and provider-native structured-output behavior with selected models; do not assume every model supports strict JSON Schema.
+Spring Boot 4.1.1 and Spring AI 2.0.1 remain pinned. The review uses `ChatClient.call().entity(converter, options -> options.useProviderStructuredOutput())` with a strict `BeanOutputConverter<StoryReview>` and Jakarta validation. Both adapters receive the same bounded schema: Ollama's `format` and OpenRouter's `response_format` with `json_schema`/`strict:true`. The optional `validateSchema()` repair loop is deliberately not enabled. Local HTTP stubs verify the actual adapter requests and fixed responses, including rejection of unsupported structured-output requests; this does not prove compatibility with a live model. Live Ollama and OpenRouter checks remain **Not run**.
 
 Official references: [Spring AI ChatClient](https://docs.spring.io/spring-ai/reference/api/chatclient.html), [Structured output](https://docs.spring.io/spring-ai/reference/api/structured-output.html), [Ollama chat](https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html).

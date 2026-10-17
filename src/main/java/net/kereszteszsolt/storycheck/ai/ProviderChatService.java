@@ -8,6 +8,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.converter.StructuredOutputConverter;
 
 public final class ProviderChatService implements AutoCloseable {
     static final int MAX_OUTPUT_TOKENS = 1024;
@@ -33,6 +34,26 @@ public final class ProviderChatService implements AutoCloseable {
                     .options(ChatOptions.builder().model(choice.model()).maxTokens(MAX_OUTPUT_TOKENS))
                     .call().content();
             if (result == null || result.isBlank() || result.length() > 32_768) {
+                throw new ProviderException(ProviderException.Reason.INVALID_RESPONSE);
+            }
+            return result;
+        }
+        catch (RuntimeException failure) {
+            throw ProviderException.from(failure);
+        }
+    }
+
+    public <T> T structured(String provider, String model, Prompt prompt, StructuredOutputConverter<T> converter) {
+        ModelRegistry.ModelChoice choice = registry.require(provider, model);
+        if (prompt == null || prompt.getContents().isBlank()
+                || prompt.getContents().length() + converter.getFormat().length() > 16_000) {
+            throw new ProviderException(ProviderException.Reason.INVALID_INPUT);
+        }
+        try {
+            T result = clients.get(choice.provider()).prompt(prompt)
+                    .options(ChatOptions.builder().model(choice.model()).maxTokens(MAX_OUTPUT_TOKENS))
+                    .call().entity(converter, options -> options.useProviderStructuredOutput());
+            if (result == null) {
                 throw new ProviderException(ProviderException.Reason.INVALID_RESPONSE);
             }
             return result;
