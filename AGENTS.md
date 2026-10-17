@@ -2,7 +2,7 @@
 
 ## Repository status and scope
 
-**StoryCheck AI is documentation-only.** Release 0.1 (`STC-001`–`STC-004`) is Planned, and no application has been implemented or tested. The approved target is one Java 21 Spring Boot app with built-in HTML/CSS/JS, Spring AI, at most three configured Ollama plus three OpenRouter models, validated JSON/Java record reviews, and Docker packaging. No database, frontend framework, RAG, tool calling, or agent runtime.
+**StoryCheck AI has an STC-001 application foundation.** Release 0.1 is in progress; STC-002–004 remain Planned. The foundation serves a minimal HTML page and health API, with Maven tests and Docker packaging; see release verification for actual evidence. The approved target is one Java 21 Spring Boot app with built-in HTML/CSS/JS, Spring AI, at most three configured Ollama plus three OpenRouter models, validated JSON/Java record reviews, and Docker packaging. No database, frontend framework, RAG, tool calling, or agent runtime.
 
 ## Read minimal relevant context
 
@@ -44,8 +44,8 @@ SPDX-FileCopyrightText: 2026 Keresztes Zsolt <https://kereszteszsolt.hu>
 SPDX-License-Identifier: Apache-2.0
 ```
 
-Examples: `//` in Java/JS, `/* ... */` in CSS, `<!-- ... -->` in HTML, `#` in shell. Do **not** copy the full Apache license into each source file. Do **not** add headers to Markdown, TOML, YAML, JSON, `.env.example`, generated files, dependency locks or the root Dockerfile. Keep the full Apache-2.0 text in `LICENSE`; preserve third-party notices. Source comments explain non-obvious reasons, not routine code behavior.
+Examples: `//` in Java/JS, `/* ... */` in CSS, `<!-- ... -->` in HTML, `#` in shell. Do **not** copy the full Apache license into each source file. Do **not** add headers to general configuration/build files such as `pom.xml`, `.properties`, `.gitignore`, `.dockerignore` or environment files. Markdown, TOML, YAML, JSON, generated files, dependency locks and the root Dockerfile also do not receive headers. Keep the full Apache-2.0 text in `LICENSE`; preserve third-party notices. Source comments explain non-obvious reasons, not routine code behavior.
 
 ## Boundaries
 
-`docs/future.md` is an idea list, not implementation approval. Do not create future releases or new agents unless asked. This baseline deliberately contains **no application source or executable build**.
+`docs/future.md` is an idea list, not implementation approval. Do not create future releases or new agents unless asked. Do not treat the STC-001 foundation as approval to implement later stories.

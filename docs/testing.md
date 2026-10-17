@@ -1,6 +1,6 @@
 # Testing and verification plan
 
-**Status: Planned; no application tests have been executed.** The baseline contains no Java sources, Maven project, or Docker Compose service.
+**Status: STC-001 foundation checks implemented; provider, review and full UI checks remain planned.** Run `mvn -B -ntp verify` with Java 21, or use the Docker build, which runs the same verification. Actual commands and outcomes are recorded in the release verification.
 
 ## Smallest useful automated checks (after implementation)
 

@@ -1,6 +1,6 @@
 # Model configuration — planned
 
-**Status: Planned.** The root `.env.example` is a specification for future application configuration, not working Spring properties yet.
+**Status: Provider integration Planned.** Only `APP_PORT` is active in the STC-001 foundation. The other root `.env.example` settings are a contract for STC-002; they are not mapped to Spring properties or passed into the app container yet.
 
 ## Fixed model slots
 

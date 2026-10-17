@@ -1,10 +1,26 @@
-# Planned REST contract
+# REST contract
 
-**Status: Proposed for Release 0.1.** These routes and examples are specifications, not running endpoints. STC-002/003 must implement and test them before documentation can claim runtime support.
+**Status: STC-001 health and error foundation implemented.** `/api/models` and `/api/reviews` remain specifications for STC-002/003 and currently return 404.
 
 ## `GET /api/health`
 
-Returns a small health response, such as `{"status":"ok"}`. It must not require access to a configured LLM or call a paid API.
+Returns HTTP 200 with `{"status":"ok"}`. It does not require a configured LLM or call a provider. The same Spring Boot process serves `/` as a minimal static HTML entry point.
+
+## Foundation errors and input boundary
+
+Errors use `application/json` and the shape `{"code":"INVALID_REQUEST","message":"The request is invalid."}`. Raw input, exception details, paths and secrets are omitted. Framework headers such as `Allow` are retained.
+
+| HTTP | Code | Meaning |
+| --- | --- | --- |
+| 400 | `INVALID_REQUEST` | Malformed/missing body or failed input validation |
+| 404 | `NOT_FOUND` | Missing resource or unimplemented endpoint |
+| 405 | `METHOD_NOT_ALLOWED` | Unsupported HTTP method |
+| 406 | `NOT_ACCEPTABLE` | Unsupported response format |
+| 413 | `PAYLOAD_TOO_LARGE` | Body exceeds 65,536 bytes |
+| 415 | `UNSUPPORTED_MEDIA_TYPE` | Unsupported request format |
+| 500 | `INTERNAL_ERROR` | Unexpected failure |
+
+All bodies read through Spring MVC `@RequestBody` are bounded to 65,536 bytes before deserialization, even without a reliable `Content-Length`. Jakarta validation is available; its invalid/missing/oversized DTO inputs are verified with a test-only controller, absent from the shipped app. The health endpoint has no input DTO. Domain constraints below remain planned for STC-003. Provider-specific HTTP mappings will be implemented there.
 
 ## `GET /api/models`
 

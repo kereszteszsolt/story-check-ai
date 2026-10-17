@@ -2,7 +2,7 @@
 
 ## Status
 
-Release 0.1 contains **four Planned stories**. This documentation-only baseline implements no application functionality. Follow the stories in their listed order after explicit approval.
+Release 0.1 is **in progress** with the STC-001 application foundation; STC-002–004 remain Planned. Follow the stories in their listed order after explicit approval. See the release verification for actual implementation and runtime evidence.
 
 ## Story format
 
@@ -19,7 +19,7 @@ Each story contains `Status`, `User story`, `Goal`, `Dependencies`, `Acceptance 
 
 ## Evidence and source comments
 
-Keep tests, environment details and blockers in verification, not in story acceptance checkboxes. Never claim a deployed app, screenshot, tested model or live provider call from planning documents alone. Keep code comments short and reason-focused. New handwritten source files use the two-line Apache-2.0 SPDX header described in `AGENTS.md`; Markdown/TOML/YAML/JSON docs do not need headers.
+Keep tests, environment details and blockers in verification, not in story acceptance checkboxes. Never claim a deployed app, screenshot, tested model or live provider call from planning documents alone. Keep code comments short and reason-focused. New handwritten source files use the two-line Apache-2.0 SPDX header described in `AGENTS.md`; general configuration/build files and Markdown/TOML/YAML/JSON docs do not need headers.
 
 ## Release closeout
 

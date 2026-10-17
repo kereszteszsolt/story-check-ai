@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Implemented
 
 ## User story
 
@@ -18,12 +18,12 @@ None. Use the existing documentation, diagrams and `.env.example` as the approve
 
 ## Acceptance criteria
 
-- [ ] Pin compatible Java 21, Spring Boot and Spring AI versions in a working Maven build; document versions and start prerequisites.
-- [ ] One Spring Boot executable serves a minimal static HTML entry point and `GET /api/health` without a separate frontend build.
-- [ ] Validate HTTP inputs and return consistent, non-sensitive errors from the API foundation.
-- [ ] Add one-service Docker/Compose startup bound to localhost; document native development and host-Ollama connectivity without adding an Ollama container.
-- [ ] Add focused JUnit/MockMvc health and startup checks; record real Maven/build/Compose results in release verification.
-- [ ] Apply exactly the two-line, language-appropriate SPDX header to new handwritten source files; retain full Apache-2.0 `LICENSE` and README support assets.
+- [x] Pin compatible Java 21, Spring Boot and Spring AI versions in a working Maven build; document versions and start prerequisites.
+- [x] One Spring Boot executable serves a minimal static HTML entry point and `GET /api/health` without a separate frontend build.
+- [x] Validate HTTP inputs and return consistent, non-sensitive errors from the API foundation.
+- [x] Add one-service Docker/Compose startup bound to localhost; document native development and host-Ollama connectivity without adding an Ollama container.
+- [x] Add focused JUnit/MockMvc health and startup checks; record real Maven/build/Compose results in release verification.
+- [x] Apply exactly the two-line, language-appropriate SPDX header to new handwritten source files; retain full Apache-2.0 `LICENSE` and README support assets.
 
 ## Out of scope
 
