@@ -321,3 +321,19 @@ README, architecture, roadmap, model/API/testing guides and release status now d
 ### Commit review — 2026-10-17
 
 Reviewed all 17 changed/new files with no blocking findings or unrelated changes. Current Surefire reports confirm 163 tests with zero failures/errors/skips, and packaged UI assets match the current sources byte for byte. The 20 browser scenarios, 13 HTTP checks and Docker verification above remain applicable; application and test sources are unchanged since their successful checks, so tests were not repeated for this documentation-only commit preparation. New-file headers/whitespace, CI configuration and local documentation links passed review. Approved commit message: `feat: implement STC-004 review UI and verification`. The resulting commit identity is recorded in Git history. No push was requested.
+
+### Docker redeployment — 2026-10-17
+
+The maintainer requested a Docker redeployment after commit `833255e`. The application/build sources were clean and unchanged. A maintainer-created, ignored `.env` now configures two Ollama and three OpenRouter model slots with a backend cloud key. Its contents were preserved and never printed. The existing localhost port 18081 was retained with an explicit override rather than switching to the Compose default 8080.
+
+```bash
+APP_PORT=18081 docker compose up --build --force-recreate --wait --wait-timeout 60 -d app
+python3 /tmp/stc-redeploy-smoke.py
+LD_LIBRARY_PATH=/tmp/task-flow-svg-check/browser-libs/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node /tmp/stc-redeploy-browser.cjs
+```
+
+Docker rebuilt the current source, independently passed **163 tests with zero failures/errors/skips**, packaged the JAR and recreated the app successfully. Current image: `sha256:204e148cbdc190ea8ac9fabd76c5af75e53a485ceb8cd8609fbb44d03c368337`; user: `storycheck`; binding: `127.0.0.1:18081 -> 8080/tcp`. No volume or other application stack was removed.
+
+The temporary Python smoke compared the resolved Compose/runtime environment internally without printing secret values. It passed **11 HTTP checks**: exact health JSON, byte-for-byte current HTML/CSS/JS, the exact configured model registry (two Ollama and three OpenRouter choices, no key disclosure), and six safe review validation/method/media-type failures before any model call. Actual Chromium checks verified all five choices, explicit selection, the cloud charge notice and layouts at 1366/390/320 pixels; all POSTs and external origins were blocked by the browser harness, and no uncaught browser error occurred.
+
+The app is running at `http://localhost:18081` with the existing `.env` loaded. Live Ollama/OpenRouter completion and model compatibility remain **Not run**; no model was downloaded and no billable API request was made. This entry records operational evidence only; application code and `.env` were not edited or committed during the redeployment.
