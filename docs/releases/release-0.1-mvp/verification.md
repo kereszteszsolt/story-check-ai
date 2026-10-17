@@ -2,14 +2,14 @@
 
 ## Status
 
-**In progress — STC-001 implemented and checked locally.** STC-002–004 remain Planned. The foundation has no model integration or story review UI, and the release is not complete.
+**In progress — STC-001–002 implemented and checked locally.** STC-003–004 remain Planned. Spring AI adapters have deterministic/mock HTTP evidence; no live model or story-review UI has been verified, and the release is not complete.
 
 ## Evidence table
 
 | Story | State | Implementation checks | Real provider / browser check | Notes |
 | --- | --- | --- | --- | --- |
 | STC-001 | Implemented | 22 JUnit/MockMvc/HTTP tests passed; executable JAR and Docker build passed; Compose config/start passed | Packaged app: 8 HTTP checks passed; visual browser and providers: Not run | Localhost-only port 18081; no native host JVM; local commit separately approved after review |
-| STC-002 | Planned | Not run | Not run | Providers not implemented |
+| STC-002 | Implemented | 64 tests passed, including 12 real-adapter HTTP-stub cases; executable JAR, Docker build and Compose checks passed | Packaged app: 6 HTTP checks passed; live Ollama/OpenRouter and visual browser: Not run | Explicit selection; no cloud fallback; no final review endpoint; local commit separately approved after review |
 | STC-003 | Planned | Not run | Not run | Structured review not implemented |
 | STC-004 | Planned | Not run | Not run | UI and CI not implemented |
 
@@ -116,3 +116,70 @@ Result: **BUILD SUCCESS — 22 tests, 0 failures, 0 errors, 0 skipped**. The sta
 ### Commit review — 2026-10-17
 
 Reviewed the complete tracked diff and all 15 new files; no blocking findings. `git diff HEAD --check` and new-file whitespace checks passed. The current Surefire reports confirm 22 passing tests under `net.kereszteszsolt`; source/configuration files are unchanged since that packaged build, so tests were not repeated for commit preparation. The JAR manifest, Maven metadata and class paths match the requested namespace. Approved commit message: `feat: implement STC-001 Spring Boot foundation`. The resulting commit identity is recorded in Git history.
+
+## STC-002 — 2026-10-17
+
+The maintainer explicitly requested implementation of the second story after STC-001 commit `570c051`, then separately authorized an STC-002 local commit subject to successful review on 2026-10-17. No live-model approval or billable request was given; STC-003–004 were not started.
+
+### Configuration and adapter boundary
+
+Java 21, Maven 3.9.16, Spring Boot 4.1.1 and Spring AI 2.0.1 are unchanged. The build now includes `spring-ai-client-chat`, `spring-ai-ollama` and `spring-ai-openai` directly, without provider auto-configuration starters. The [official Ollama](https://docs.spring.io/spring-ai/reference/api/chat/ollama-chat.html) and [OpenAI-compatible adapter](https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html) guidance and the pinned module source JARs were checked against the compiled APIs.
+
+The registry reads exactly three slots per provider, trims/ignores blanks, deduplicates within each provider and returns immutable public descriptors. OpenRouter requires a nonblank key. The internal gateway checks the exact provider/model pair before any call; the configured model overrides the adapter default. Timeouts default to 60,000 ms and must be 1,000–120,000 ms. Application/SDK retries are zero, no provider fallback is implemented, and OpenRouter receives `provider.allow_fallbacks=false`. The gateway bounds prompts to 16,000 characters, requests 1,024 output tokens and rejects blank or over-32,768-character output. No tools or callbacks are registered.
+
+Only `GET /api/models` is added publicly. Prompt completion is an internal adapter boundary for the next story, not a public review endpoint or the final review prompt/schema. Error rendering tests use test-only controllers, absent from the packaged JAR.
+
+### Commands and results
+
+Commands ran from `/mnt/c/P/ghpub/www-temp/story-check-ai` using the existing Java 21 Maven container/cache:
+
+```bash
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -DskipTests compile
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -Dtest=ModelRegistryTests,ProviderConfigurationTests,ProviderChatServiceTests test
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -Dtest=ModelRegistryTests,ProviderConfigurationTests,ProviderChatServiceTests,ProviderWireTests,ModelsApiTests test
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -Dtest=ProviderWireTests test
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp -Dtest=ProviderWireTests#configuredTimeoutIsAppliedToBothAdapters test
+docker run --rm -v /mnt/c/P/ghpub/www-temp/story-check-ai:/workspace -v /tmp/stc001-m2:/root/.m2 -w /workspace maven:3.9.16-eclipse-temurin-21 mvn -B -ntp clean verify
+docker compose config --quiet
+git diff HEAD --check
+```
+
+Early checks exposed Spring AI 2.0 API differences (builder-based request options and the SDK transport location), a mock returning null default options, and a wire assertion that incorrectly required an explicit `stream:false` field when the SDK legitimately omits it. Those were corrected. Initial timeout probes included cold SDK class loading in their four-second total budget; they now warm the adapter against the same local stub before measuring the one-second timeout against a two-second delayed response. Temporary socket-timeout tuning was removed; both adapters pass using the configured request timeouts. The final isolated wire suite passed all 12 cases.
+
+The final **clean verify passed: 64 tests, 0 failures, 0 errors, 0 skipped**, and produced `target/story-check-ai.jar`. Negative configuration fixtures intentionally log safe startup failures; the test JVM still emits its known class-data-sharing warning. Neither is a test failure.
+
+| Suite | Tests | Evidence |
+| --- | --- | --- |
+| ModelRegistryTests | 8 | Empty/duplicate slots, slot cap, per-provider identity, missing credentials, exact allowlist, redacted settings |
+| ProviderConfigurationTests | 7 | Environment mapping, ignored fourth slot, missing key, timeout bounds and safe endpoint validation |
+| ProviderChatServiceTests | 5 | Mock routing, literal prompt text, unknown models before calls, no fallback on timeout, input/output bounds |
+| ProviderWireTests | 12 | Real Spring AI adapters against loopback stubs: exact paths, selected model, backend Authorization, output-token limit, OpenRouter fallback/tool-choice flags, 429/500/404/401/400/504 and timeouts; one request per failure |
+| ModelsApiTests | 9 | Public descriptors only, no key/endpoint disclosure, invalid selection 422, safe provider HTTP errors |
+| ApiFoundationTests | 15 | Existing foundation behavior plus empty model list; review route remains absent |
+| StartupTests | 5 | Real same-origin HTTP, local-only choices and health with a missing cloud key, test routes absent |
+| BoundedRequestBodyAdviceTests | 3 | Existing byte-limit regressions |
+
+JAR/source audits confirmed the three pinned Spring AI modules, no provider auto-configuration starters, no test fixtures in the JAR, correct `net.kereszteszsolt` packages, and the prescribed source headers across 21 Java/HTML files. General config/build files remain header-free. XML parsing, local guide links and whitespace checks passed. A Compose JSON audit with dummy settings verified all six model slots, the backend key and timeout forwarding, one app service and localhost-only publishing without printing credentials.
+
+### Packaged runtime and final review
+
+```bash
+APP_PORT=18081 OLLAMA_MODEL_1= OLLAMA_MODEL_2= OLLAMA_MODEL_3= OPENROUTER_API_KEY= OPENROUTER_MODEL_1= OPENROUTER_MODEL_2= OPENROUTER_MODEL_3= docker compose up --build -d
+docker compose ps
+docker inspect story-check-ai-app-1 --format '{{json .NetworkSettings.Ports}} user={{.Config.User}} image={{.Image}}'
+docker compose exec -T app id
+```
+
+Docker independently built the current source with **64 passing tests**, repackaged the JAR and started `story-check-ai-app-1`. Image: `sha256:d7a3c02d4f1d938b5ba0701c2e55b233389bd75353a8ca61d7ceadecb51970b1`. It runs as `uid=999(storycheck)` and publishes only `127.0.0.1:18081 -> 8080/tcp`. Model slots/key were explicitly empty for this runtime check; no `.env` was created or edited.
+
+A Python `urllib.request` loop with a five-second request timeout checked six paths on `http://127.0.0.1:18081`: `/` returned HTML 200; `/api/health` returned 200 with exactly `{"status":"ok"}`; `/api/models` returned 200 with exactly `{"models":[]}`; `/api/reviews`, `/api/test/select` and `/api/test/provider-error` each returned JSON `NOT_FOUND` with HTTP 404. **All six passed.** The application was left running on that port; startup and listing made no model requests.
+
+The final tracked/untracked diff was reviewed with no blocking findings. Scope remains STC-002, `net.kereszteszsolt` and the configuration-header exception are retained, and STC-003–004 files are unchanged. Commit message: `feat: implement STC-002 configured AI providers`; the maintainer separately approved the local commit after implementation.
+
+### Real-provider boundary
+
+**Live Ollama: Not run. Live OpenRouter: Not run.** No real provider/model was tested or downloaded. All generated test text is fixed fixture content; adapter requests went only to local loopback HTTP stubs with dummy credentials. No compatibility claim is made for the example `qwen2.5:7b` / `llama3.2:3b` models or any cloud model. No billable API call, host Ollama bind/firewall change, visual browser test or final structured-review test was performed.
+
+### Commit review — 2026-10-17
+
+Reviewed the full tracked diff and the 11 new Java files. Current Surefire reports confirm 64 tests with zero failures/errors/skips; source/configuration files are unchanged since the packaged build, so tests were not repeated for commit preparation. The JAR module/namespace/fixture audit, Compose configuration, source headers and whitespace checks passed. No blocking findings or unrelated files were found. The resulting commit identity is recorded in Git history.

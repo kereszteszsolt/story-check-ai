@@ -2,7 +2,7 @@
 
 ## Status
 
-**In progress — STC-001 foundation.** A minimal Spring Boot page, health API, Maven tests and one-service Docker packaging are implemented. STC-002–004 remain Planned; no provider calls, structured reviews or review UI exist yet. See verification for measured results and limitations.
+**In progress — STC-001–002 implemented.** The app has a minimal page, health/model-list APIs, explicit Spring AI adapters, deterministic tests and one-service Docker packaging. STC-003–004 remain Planned. Structured reviews and the review UI do not exist yet; live-provider compatibility remains untested. See verification for measured results and limitations.
 
 ## Goal
 
@@ -21,7 +21,7 @@ Deliver one small Spring Boot web app: choose a configured Ollama/OpenRouter mod
 | Story | Scope | Status |
 | --- | --- | --- |
 | [STC-001](stories/STC-001-spring-boot-foundation.md) | Spring Boot foundation, build, Compose and health | Implemented |
-| [STC-002](stories/STC-002-configured-llm-providers.md) | Explicit Ollama/OpenRouter model registry and connection | Planned |
+| [STC-002](stories/STC-002-configured-llm-providers.md) | Explicit Ollama/OpenRouter model registry and connection | Implemented |
 | [STC-003](stories/STC-003-structured-story-review.md) | Structured story review prompt, Java records and safe errors | Planned |
 | [STC-004](stories/STC-004-ui-tests-and-release-verification.md) | One-page UI, Markdown copy, tests, CI and truthful docs | Planned |
 

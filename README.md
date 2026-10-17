@@ -9,7 +9,7 @@
 
 **StoryCheck AI** is a small, self-hosted **user story review demo** planned with Java, Spring Boot, and Spring AI. Paste a story, choose a configured Ollama or OpenRouter model, and request suggestions for **acceptance criteria**, **clarification questions**, and **test cases**. Review the result on one page and copy it as Markdown.
 
-> **Repository status: STC-001 foundation implemented; Release 0.1 in progress.** The app serves a minimal HTML page and `GET /api/health`, with Maven tests and one-service Docker packaging. Model configuration, provider calls, story reviews, the review UI and CI remain Planned in STC-002–004. The feature descriptions and diagrams below describe that target. Implementation requires explicit story-by-story approval.
+> **Repository status: Release 0.1 in progress.** STC-001 provides a minimal HTML page, health API and Docker packaging. STC-002 adds `GET /api/models` and explicit Ollama/OpenRouter adapters, verified with mocks and local HTTP stubs. Live-provider compatibility remains untested. Story reviews, the review UI and CI remain Planned in STC-003–004. The feature descriptions and diagrams below describe that target. Implementation requires explicit story-by-story approval.
 
 ## Planned features — Release 0.1
 
@@ -74,18 +74,18 @@ More detail: [Architecture](docs/architecture.md) · [API contract](docs/api-con
 | Layer | Technology |
 | --- | --- |
 | Application | Java 21, Spring Boot 4.1.1, Spring Web MVC |
-| AI integration | Spring AI 2.0.1 BOM pinned; `ChatClient`, Ollama and OpenRouter integration planned |
-| Output | Java records, Structured Outputs / JSON Schema, server-side validation |
+| AI integration | Spring AI 2.0.1 `ChatClient`, Ollama and OpenAI-compatible OpenRouter adapters |
+| Output | Planned: Java review records, Structured Outputs / JSON Schema, server-side validation |
 | UI | HTML5, CSS3, Vanilla JavaScript (`src/main/resources/static/`) |
 | Build & tests | Maven 3.6.3+ (3.x), JUnit Jupiter, Spring MockMvc; Docker build uses Maven 3.9.16 |
 | Packaging | Docker, Docker Compose (one app service; external AI providers) |
 | Quality | GitHub Actions planned (focused, mocked tests and build) |
 
-`pom.xml` pins Java 21, Spring Boot 4.1.1 and the Spring AI 2.0.1 BOM. The [official compatibility guide](https://docs.spring.io/spring-ai/reference/getting-started.html) supports Spring AI 2.0.x with Boot 4.0.x/4.1.x; [Boot requirements](https://docs.spring.io/spring-boot/4.1/system-requirements.html) include Java 21 and Maven 3.6.3+. Maven Enforcer requires a Java 21 JDK and Maven 3.x. No AI provider dependency is loaded by the foundation. Compatibility of structured output remains model-dependent and must be tested in later stories.
+`pom.xml` pins Java 21, Spring Boot 4.1.1 and the Spring AI 2.0.1 BOM. The [official compatibility guide](https://docs.spring.io/spring-ai/reference/getting-started.html) supports Spring AI 2.0.x with Boot 4.0.x/4.1.x; [Boot requirements](https://docs.spring.io/spring-boot/4.1/system-requirements.html) include Java 21 and Maven 3.6.3+. Maven Enforcer requires a Java 21 JDK and Maven 3.x. Provider modules are configured directly so missing OpenRouter credentials do not trigger failing auto-configuration. Compatibility of structured output remains model-dependent and must be tested in later stories.
 
 The Maven coordinates are `net.kereszteszsolt:story-check-ai`; Java sources and tests use the `net.kereszteszsolt.storycheck` package.
 
-## Model configuration (planned)
+## Server-side model configuration
 
 The example configuration exposes only non-empty allowlisted model slots:
 
@@ -103,9 +103,9 @@ OPENROUTER_MODEL_3=
 
 These are **example model identifiers, not automatically installed models**. Set Ollama model names to models already pulled on your host. Enable OpenRouter only by providing a server-side API key and one or more compatible model IDs. The UI never receives the key. Model names are backend-validated; arbitrary client-supplied model IDs and automatic cloud fallback are not allowed.
 
-Copy `.env.example` to `.env` for Compose. Only `APP_PORT` is consumed in STC-001; provider settings and timeout mapping remain a contract for STC-002. Compose does not pass credentials to the foundation. See [Model configuration](docs/model-configuration.md) for the planned provider behavior.
+Copy `.env.example` to `.env` for Compose. The backend reads the configured URLs, model slots, OpenRouter key and `AI_REQUEST_TIMEOUT_MS`. Blank slots are hidden, surrounding whitespace is trimmed, and duplicate IDs are removed within each provider. `GET /api/models` returns only `provider`, `model` and `label`; a blank cloud key hides all OpenRouter choices. Startup, health and model listing never call either provider. See [Model configuration](docs/model-configuration.md) for limits and failure categories.
 
-## Local startup — STC-001 foundation
+## Local startup
 
 The foundation needs no model, Ollama installation or API key. Choose a Java 21 JDK with Maven 3.6.3+ (3.x), or Docker Engine/Desktop with Compose v2+. Docker builds need network access to Maven Central and the Maven/Temurin image registries.
 
@@ -124,16 +124,16 @@ Docker Compose:
 
 ```bash
 cp .env.example .env
-# Optionally change APP_PORT; provider settings are not used yet.
+# Configure installed model slots; leave OpenRouter credentials blank if unused.
 docker compose config --quiet
 docker compose up --build
 ```
 
 Open `http://localhost:8080` (or your `APP_PORT`) for the minimal page. `curl --fail http://localhost:8080/api/health` returns `{"status":"ok"}` without contacting a provider. Use `docker compose down` to stop the stack. The container runs as a non-root user; Compose publishes its fixed internal port 8080 only on `127.0.0.1`. `.dockerignore` allows only the Maven project, source and license into the build context, excluding `.env` and repository metadata.
 
-Ollama remains host-installed and outside Compose. Later provider integration will use `http://localhost:11434` for native development and `http://host.docker.internal:11434` from Docker. Compose includes the Linux `host-gateway` mapping, but a host Ollama bound only to loopback may still be unreachable from a Linux bridge. Any host bind/firewall adjustment requires separate configuration; no such change or connectivity test is part of STC-001. No models are downloaded automatically.
+Ollama remains host-installed and outside Compose. Its default endpoint is `http://localhost:11434` for native development and `http://host.docker.internal:11434` from Docker. Compose includes the Linux `host-gateway` mapping, but a host Ollama bound only to loopback may still be unreachable from a Linux bridge. Any host bind/firewall adjustment requires separate configuration; live host connectivity remains untested. No models are downloaded automatically.
 
-The API foundation returns safe JSON errors (`code`, `message`) for invalid requests, missing routes, unsupported methods/formats and unexpected failures. Requests deserialized through `@RequestBody` have a 65,536-byte limit, including streams without a declared length; Jakarta validation is available for later DTOs. No review endpoint exists yet. See [API contract](docs/api-contract.md) and the actual [verification results](docs/releases/release-0.1-mvp/verification.md).
+The API returns safe JSON errors (`code`, `message`). Requests deserialized through `@RequestBody` have a 65,536-byte limit. The internal provider gateway validates exact provider/model pairs against the enabled allowlist, uses bounded timeouts (1,000–120,000 ms), and makes no automatic retries or provider fallback. Its transport checks use fixed responses; no review endpoint or model selector UI exists yet. See [API contract](docs/api-contract.md) and the actual [verification results](docs/releases/release-0.1-mvp/verification.md).
 
 ## Development workflow
 

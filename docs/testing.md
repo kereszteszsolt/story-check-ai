@@ -1,6 +1,6 @@
 # Testing and verification plan
 
-**Status: STC-001 foundation checks implemented; provider, review and full UI checks remain planned.** Run `mvn -B -ntp verify` with Java 21, or use the Docker build, which runs the same verification. Actual commands and outcomes are recorded in the release verification.
+**Status: STC-001 foundation and STC-002 model/provider checks implemented; structured-review and full UI checks remain planned.** Run `mvn -B -ntp verify` with Java 21, or use the Docker build, which runs the same verification. Provider checks use Mockito and loopback HTTP stubs with fixed responses; the real Spring AI adapters never contact an external model during tests. Actual commands and outcomes are recorded in the release verification.
 
 ## Smallest useful automated checks (after implementation)
 

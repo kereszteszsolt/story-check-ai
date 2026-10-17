@@ -14,7 +14,9 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"OLLAMA_MODEL_1=local", "OLLAMA_BASE_URL=http://127.0.0.1:1",
+                "OPENROUTER_MODEL_1=disabled-cloud", "OPENROUTER_API_KEY="})
 class StartupTests {
     @LocalServerPort
     private int port;
@@ -50,6 +52,15 @@ class StartupTests {
     @Test
     void testFixturesAreAbsentFromProductionContext() throws Exception {
         assertEquals(404, get("/api/test/failure", "application/json").statusCode());
+    }
+
+    @Test
+    void missingCloudKeyKeepsLocalModelsAndHealthAvailable() throws Exception {
+        HttpResponse<String> response = get("/api/models", "application/json");
+        assertEquals(200, response.statusCode());
+        assertEquals("{\"models\":[{\"provider\":\"ollama\",\"model\":\"local\",\"label\":\"Ollama · local\"}]}",
+                response.body());
+        assertEquals(200, get("/api/health", "application/json").statusCode());
     }
 
     private HttpResponse<String> get(String path, String accept) throws Exception {

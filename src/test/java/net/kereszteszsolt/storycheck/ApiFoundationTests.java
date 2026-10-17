@@ -45,6 +45,13 @@ class ApiFoundationTests {
     }
 
     @Test
+    void noConfigurationReturnsAnEmptyModelList() throws Exception {
+        mvc.perform(get("/api/models"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{\"models\":[]}"));
+    }
+
+    @Test
     void wrongMethodPreservesAllowHeaderAndReturnsSafeJson() throws Exception {
         mvc.perform(post("/api/health"))
                 .andExpect(status().isMethodNotAllowed())
@@ -61,7 +68,7 @@ class ApiFoundationTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/missing", "/api/models", "/api/reviews"})
+    @ValueSource(strings = {"/api/missing", "/api/reviews"})
     void unimplementedRoutesAreNotFound(String path) throws Exception {
         mvc.perform(get(path))
                 .andExpect(status().isNotFound())

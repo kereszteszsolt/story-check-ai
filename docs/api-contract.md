@@ -1,6 +1,6 @@
 # REST contract
 
-**Status: STC-001 health and error foundation implemented.** `/api/models` and `/api/reviews` remain specifications for STC-002/003 and currently return 404.
+**Status: Health, error foundation and model listing implemented.** `/api/reviews` remains an STC-003 specification and currently returns 404.
 
 ## `GET /api/health`
 
@@ -20,7 +20,7 @@ Errors use `application/json` and the shape `{"code":"INVALID_REQUEST","message"
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Unsupported request format |
 | 500 | `INTERNAL_ERROR` | Unexpected failure |
 
-All bodies read through Spring MVC `@RequestBody` are bounded to 65,536 bytes before deserialization, even without a reliable `Content-Length`. Jakarta validation is available; its invalid/missing/oversized DTO inputs are verified with a test-only controller, absent from the shipped app. The health endpoint has no input DTO. Domain constraints below remain planned for STC-003. Provider-specific HTTP mappings will be implemented there.
+All bodies read through Spring MVC `@RequestBody` are bounded to 65,536 bytes before deserialization, even without a reliable `Content-Length`. Jakarta validation is available; its invalid/missing/oversized DTO inputs are verified with a test-only controller, absent from the shipped app. The health endpoint has no input DTO. Domain constraints below remain planned for STC-003. Internal provider failures use the safe mappings in [Model configuration](model-configuration.md); their API rendering is checked with test-only routes, absent from the shipped app.
 
 ## `GET /api/models`
 
@@ -37,7 +37,7 @@ Example shape:
 }
 ```
 
-Example model values are illustrative; actual values come from `.env`.
+Example model values are illustrative; actual values come from backend environment configuration. With no enabled choices, the response is `{"models":[]}`. This endpoint never contacts providers, downloads models or tests model health. It accepts no arbitrary model or endpoint overrides.
 
 ## `POST /api/reviews`
 

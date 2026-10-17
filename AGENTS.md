@@ -2,7 +2,7 @@
 
 ## Repository status and scope
 
-**StoryCheck AI has an STC-001 application foundation.** Release 0.1 is in progress; STC-002–004 remain Planned. The foundation serves a minimal HTML page and health API, with Maven tests and Docker packaging; see release verification for actual evidence. The approved target is one Java 21 Spring Boot app with built-in HTML/CSS/JS, Spring AI, at most three configured Ollama plus three OpenRouter models, validated JSON/Java record reviews, and Docker packaging. No database, frontend framework, RAG, tool calling, or agent runtime.
+**StoryCheck AI has an application foundation and STC-002 provider configuration.** Release 0.1 is in progress; STC-003–004 remain Planned. The app serves a minimal HTML page, health and model-list APIs, with Spring AI adapters, deterministic tests and Docker packaging; see release verification for actual evidence and untested live providers. The approved target is one Java 21 Spring Boot app with built-in HTML/CSS/JS, Spring AI, at most three configured Ollama plus three OpenRouter models, validated JSON/Java record reviews, and Docker packaging. No database, frontend framework, RAG, tool calling, or agent runtime.
 
 ## Read minimal relevant context
 
@@ -48,4 +48,4 @@ Examples: `//` in Java/JS, `/* ... */` in CSS, `<!-- ... -->` in HTML, `#` in sh
 
 ## Boundaries
 
-`docs/future.md` is an idea list, not implementation approval. Do not create future releases or new agents unless asked. Do not treat the STC-001 foundation as approval to implement later stories.
+`docs/future.md` is an idea list, not implementation approval. Do not create future releases or new agents unless asked. Existing implementation does not authorize starting later stories.

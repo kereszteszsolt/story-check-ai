@@ -3,6 +3,7 @@
 package net.kereszteszsolt.storycheck.web;
 
 import jakarta.validation.ConstraintViolationException;
+import net.kereszteszsolt.storycheck.ai.ProviderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +32,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiError> invalidInput(ConstraintViolationException exception) {
         return error(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ProviderException.class)
+    public ResponseEntity<ApiError> providerError(ProviderException exception) {
+        ProviderException.Reason reason = exception.reason();
+        return ResponseEntity.status(reason.status()).contentType(MediaType.APPLICATION_JSON)
+                .body(new ApiError(reason.code(), reason.message()));
     }
 
     @ExceptionHandler(Exception.class)
