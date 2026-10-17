@@ -1,0 +1,32 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENROUTER_API_KEY: ''
+      OLLAMA_MODEL_1: ''
+      OLLAMA_MODEL_2: ''
+      OLLAMA_MODEL_3: ''
+      OPENROUTER_MODEL_1: ''
+      OPENROUTER_MODEL_2: ''
+      OPENROUTER_MODEL_3: ''
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Test and package with fixed provider fixtures
+        run: mvn -B -ntp verify
