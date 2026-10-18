@@ -57,6 +57,19 @@
     </dependencies>
     <build>
         <finalName>story-check-ai</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>brand</directory>
+                <targetPath>static/brand</targetPath>
+                <includes>
+                    <include>branding.json</include>
+                    <include>assets/**</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -337,3 +337,71 @@ Docker rebuilt the current source, independently passed **163 tests with zero fa
 The temporary Python smoke compared the resolved Compose/runtime environment internally without printing secret values. It passed **11 HTTP checks**: exact health JSON, byte-for-byte current HTML/CSS/JS, the exact configured model registry (two Ollama and three OpenRouter choices, no key disclosure), and six safe review validation/method/media-type failures before any model call. Actual Chromium checks verified all five choices, explicit selection, the cloud charge notice and layouts at 1366/390/320 pixels; all POSTs and external origins were blocked by the browser harness, and no uncaught browser error occurred.
 
 The app is running at `http://localhost:18081` with the existing `.env` loaded. Live Ollama/OpenRouter completion and model compatibility remain **Not run**; no model was downloaded and no billable API request was made. This entry records operational evidence only; application code and `.env` were not edited or committed during the redeployment.
+
+### Branding and localhost-port adjustment — 2026-10-18
+
+Maintenance adjustment to the existing release; no new story or release was added. The temporary STC-005 plan/index entry was removed. Existing maintainer branding metadata, SVG/PNG posters and README content were preserved and integrated.
+
+Implemented: packaged `/brand/branding.json` and artwork; a matching hand-written SVG app icon and simplified SVG favicon; a header About button and native dialog with a 4px blurred/dimmed backdrop, original large SVG poster, metadata-driven description and author/project links, grouped support buttons, voluntary-support note, and current-year copyright/license in About and the page footer. Hover/focus tooltips show destination descriptions and full URLs, including hu | en | ro | de on the website/support links. Escape dismisses a tooltip before the dialog, keyboard focus stays inside About, and closing restores button focus without resetting the story/model/review. Brand loading errors leave the review flow available.
+
+Compose and `.env.example` now default to host port `33070`; only `APP_PORT` was changed in the existing ignored `.env`, with a byte-level comparison confirming all other settings were preserved. Port availability was checked before startup. The app is running as `storycheck` with only `127.0.0.1:33070 -> 8080/tcp`, replacing the earlier `18081` binding. Original SVG/PNG poster hashes are unchanged. README, branding guide, model-port instructions and browser-test instructions were updated.
+
+Actual commands:
+
+```bash
+docker compose config --quiet
+docker compose build app
+docker compose up -d --force-recreate --wait --wait-timeout 60 app
+docker run --rm -d --name storycheck-branding-verification -p 127.0.0.1:33071:8080 -e APP_BIND_ADDRESS=0.0.0.0 story-check-ai-app
+STC_BASE_URL=http://127.0.0.1:33071 STC_BROWSER_ARTIFACTS=/tmp/storycheck-branding-browser-artifacts STC_CHROMIUM_PATH=/home/zsolti-wsl/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome PLAYWRIGHT_MODULE=/tmp/cca008-browser/node_modules/playwright LD_LIBRARY_PATH=/tmp/type-nudge-linux-deps/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node browser-tests/review-ui.mjs
+python3 /tmp/storycheck-branding-smoke.py
+STC_CHROMIUM_PATH=/home/zsolti-wsl/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome LD_LIBRARY_PATH=/tmp/type-nudge-linux-deps/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node /tmp/storycheck-artwork-preview.cjs
+docker stop storycheck-branding-verification
+git -c core.whitespace=cr-at-eol diff --check
+```
+
+Both Docker builds ran Maven `verify`: **167 tests, 0 failures, 0 errors, 0 skipped**, including startup HTTP checks for the packaged JSON, SVG content types and exclusion of the brand guide/browser fixtures. The first Chromium pass found that Shift+Tab from the initial control could leave dialog focus. Explicit Tab boundary handling was added; the final image was rebuilt, retested and redeployed. Final image: `sha256:f6a3fa309dca5557f8541169cf8b056abb7fb5d65133ae012fcc3e4e569f9b96`.
+
+**27 Chromium scenarios passed**, covering the previous 20 review/copy/error/mobile scenarios plus metadata/link targets, poster decoding, actual backdrop blur, keyboard focus boundaries, Escape priority and return focus, hover/focus tooltip replacement and hoverable content, unchanged drafts/results, review completion while About remains open, branding-load failure isolation and About at 320/390 pixels without horizontal overflow. APIs use synthetic browser fixtures except the real empty model list on the temporary container. External origins are blocked. The final source-matching image is the same on the temporary test port and the configured production port; no real provider completion was invoked.
+
+The runtime smoke against `33070` compared **9 HTTP assets and their JAR entries byte for byte** with current sources, checked health/model metadata, private-file 404s, non-root user, exact localhost port binding and the resolved runtime environment without printing credentials. The key was absent from application classes/resources. Desktop and 320px About screenshots and an SVG preview at 128/48/32/16px on light/dark backgrounds were visually inspected under `/tmp/storycheck-branding-browser-artifacts/`.
+
+Browser tooling initially lacked its expected default executable; the existing Chromium 151.0.7922.34 was selected through the new optional `STC_CHROMIUM_PATH`. A sandboxed launch was blocked by socket restrictions; the authorized run succeeded using existing temporary libraries. No browser/tool dependency was added to the app or image.
+
+Final review passed JavaScript syntax, SVG parsing/asset paths, new-source SPDX notices, local README links and CRLF-aware diff whitespace checks. No staged changes or additional story remain.
+
+Live Ollama/OpenRouter requests, other browser engines, hosted CI and public deployment: **Not run**. No model download or paid API call occurred. The temporary verification container was stopped/removed; the configured app remains running on localhost `33070`. No commit or push was made. Proposed commit message: `fix: integrate branding and About with a localhost Docker port`.
+
+### Normal-zoom layout and link polish — 2026-10-19
+
+Maintenance adjustment in `styles.css` and `branding.js`: reduced header/intro/panel/footer spacing, bounded the starting story-field height while retaining native vertical resizing, removed empty-status margins and corrected character-count alignment. Desktop viewports up to 800px tall use tighter spacing. Content and review results remain naturally scrollable; no page zoom, transform or clipping workaround is applied.
+
+Apache-2.0 links in the footer and About now use muted ochre (`#8a5a1f`) with no default underline; only hover adds the underline, while keyboard focus keeps its existing outline. The Ways to support tooltip has a 368px preferred maximum width, still clamped to the viewport/dialog. Its original wording/URL are unchanged. Language lists are an inline non-wrapping span, so German cannot wrap onto its own line on narrower screens.
+
+Actual commands:
+
+```bash
+/home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node --check src/main/resources/static/branding.js
+docker compose build app
+docker compose up -d --force-recreate --wait --wait-timeout 60 app
+LD_LIBRARY_PATH=/tmp/type-nudge-linux-deps/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node /tmp/storycheck-layout-adjustment.cjs
+python3 /tmp/storycheck-branding-smoke.py
+docker run --rm -d --name storycheck-layout-verification -p 127.0.0.1:33071:8080 -e APP_BIND_ADDRESS=0.0.0.0 story-check-ai-app
+STC_BASE_URL=http://127.0.0.1:33071 STC_BROWSER_ARTIFACTS=/tmp/storycheck-layout-regression STC_CHROMIUM_PATH=/home/zsolti-wsl/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome PLAYWRIGHT_MODULE=/tmp/cca008-browser/node_modules/playwright LD_LIBRARY_PATH=/tmp/type-nudge-linux-deps/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node browser-tests/review-ui.mjs
+docker stop storycheck-layout-verification
+git -c core.whitespace=cr-at-eol diff --check
+```
+
+Docker build/Maven `verify`: **167 tests, zero failures/errors/skips**. Current image: `sha256:9e9c68e70471f7f7bb5281f401a4a16f77e83d9506ba6aabc922a334e0c512c0`. The configured app was recreated and remains bound only to `127.0.0.1:33070 -> 8080/tcp`; the temporary regression container was removed. This adjustment did not edit environment values or poster/icon assets.
+
+The focused Chromium script passed **seven viewports** against the final Docker-served files, with synthetic model-list responses and all POST/external requests blocked. At normal zoom (`visualViewport.scale === 1`), the initial configured-model screen, including footer, fits without vertical or horizontal overflow at 1078×929, 1440×900, 1366×768, 1280×720 and 1024×768. Footer bottoms measured approximately 885.4, 892.0, 718.4, 709.8 and 738.9 CSS pixels respectively. The textarea remains vertically resizable. Normal mobile scrolling remains at 320×844 and 390×844 with no horizontal overflow.
+
+Computed styles verified the ochre license color, no default underline and hover underline in both footer/About. DOM Range measurements verified two tooltip lines on desktop (description with all four languages, then the full URL). Mobile tooltips use three lines when needed, with all four language codes together and every tooltip inside its viewport. Desktop start/tooltip screenshots under `/tmp/storycheck-layout-adjustment/` were visually inspected. Source overrides were used during initial sizing experiments; the final checks above ran without overrides against the rebuilt app.
+
+The existing **27 browser regression scenarios passed** again on the same final image with synthetic provider responses, including review/copy, error states, literal output, keyboard focus, Escape, About preservation and mobile bounds. The runtime smoke also passed: all **9 HTTP assets and JAR entries match source**, health/model metadata and private-file 404s are correct, environment matches resolved Compose without credential output, and original posters are unchanged. JavaScript syntax and the CRLF-aware diff check passed. No new story, persistent test tooling, commit, push or live provider request was added. Other browser engines, hosted CI and public deployment: **Not run**.
+
+### Branding/layout commit review — 2026-10-19
+
+The maintainer explicitly approved committing the completed maintenance adjustments. Reviewed the complete worktree and staged changes on `fix_patch_20261018`; no blocking issue was found. A credential audit covered 72 tracked/untracked files and all 20 staged files without printing values: configured secrets/private-key patterns were absent, `.env` remains ignored and unstaged, and the example API key is blank. Staged content matches reviewed source after normal Git line-ending normalization; existing worktree CRLF is preserved.
+
+The final application/build/test sources are unchanged since the successful 167-test Maven build, 27 Chromium scenarios, seven-viewport layout check and runtime source/JAR comparison above. Those checks were not repeated for this documentation-only commit preparation. CRLF-aware staged whitespace checks passed. Approved commit message: `fix: integrate branding and polish the review layout`. Commit identity is recorded in Git history. No push was requested.

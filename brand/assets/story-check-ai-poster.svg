@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 480" role="img" aria-labelledby="title desc">
+  <title id="title">StoryCheck AI project poster</title>
+  <desc id="desc">A tilted story sheet, a golden question bubble, and a code symbol surround a large teal magnifying glass revealing a checkmark: clearer acceptance criteria, questions, and test cases.</desc>
+  <rect width="780" height="480" rx="24" fill="#fff4e4"/>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="390" y="88" fill="#254e48" font-size="62" font-weight="800" letter-spacing="-2">StoryCheck AI</text>
+    <text x="390" y="132" fill="#55746a" font-size="28" font-weight="500">Clearer stories. Testable steps.</text>
+  </g>
+  <ellipse cx="393" cy="329" rx="206" ry="119" fill="#f2e4cd"/>
+  <g transform="rotate(-9 367 305)">
+    <rect x="266" y="190" width="216" height="246" rx="17" fill="#d5ccb7"/>
+    <rect x="259" y="181" width="216" height="246" rx="17" fill="#fffdf8" stroke="#d8dfcf" stroke-width="3"/>
+    <rect x="281" y="204" width="78" height="13" rx="6" fill="#254e48"/>
+    <path d="M282 244h168m-168 22h128" fill="none" stroke="#cad9cd" stroke-width="9" stroke-linecap="round"/>
+    <rect x="282" y="298" width="23" height="23" rx="5" fill="#a4cfb8"/>
+    <path d="m287 309 5 5 9-11" fill="none" stroke="#254e48" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M322 309h113" fill="none" stroke="#cad9cd" stroke-width="9" stroke-linecap="round"/>
+    <rect x="282" y="341" width="23" height="23" rx="5" fill="#f7d57c"/>
+    <path d="M322 352h94m-134 43h125" fill="none" stroke="#cad9cd" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <g transform="rotate(12 195 243)">
+    <path d="M155 211a19 19 0 0 1 19-19h46a19 19 0 0 1 19 19v39a19 19 0 0 1-19 19h-29l-20 17v-18a19 19 0 0 1-16-19Z" fill="#f4cd74"/>
+    <text x="197" y="250" fill="#765a25" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="700" text-anchor="middle">?</text>
+  </g>
+  <g transform="rotate(11 566 222)">
+    <rect x="526" y="189" width="86" height="66" rx="17" fill="#c8e4d0"/>
+    <path d="m552 209-12 13 12 13m33-26 12 13-12 13m-13-30-9 34" fill="none" stroke="#254e48" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <path d="m505 358 61 64" fill="none" stroke="#254e48" stroke-width="29" stroke-linecap="round"/>
+  <path d="m545 400 22 23" fill="none" stroke="#44796b" stroke-width="29" stroke-linecap="round"/>
+  <circle cx="462" cy="312" r="76" fill="#254e48"/>
+  <circle cx="462" cy="312" r="61" fill="#dceee0"/>
+  <path d="m432 311 21 23 40-46" fill="none" stroke="#347b5e" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M410 297a54 54 0 0 1 32-33" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M613 321v22m-11-11h22m-423 53v16m-8-8h16" fill="none" stroke="#a4bb9f" stroke-width="5" stroke-linecap="round"/>
+</svg>

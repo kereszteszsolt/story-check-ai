@@ -25,7 +25,7 @@ The `POST /api/reviews` service uses `ProviderChatService` with an explicit `pro
 - `OPENROUTER_MODEL_1..3`: OpenRouter-qualified model IDs. Select models that actually support the chosen structured-output mode.
 - `OPENROUTER_BASE_URL`: HTTPS OpenAI-compatible API base, default `https://openrouter.ai/api/v1`; backend-only, not user-editable through HTTP. Plain HTTP is allowed only for loopback test endpoints. Provider URLs cannot contain user credentials, query strings or fragments.
 - `AI_REQUEST_TIMEOUT_MS`: default `60000`, validated range `1000..120000` milliseconds. Both providers have zero automatic retries. OpenRouter also receives `provider.allow_fallbacks=false`.
-- `APP_PORT`: local Compose website port; expected default `8080`.
+- `APP_PORT`: local Compose website port; default `33070`, bound only to `127.0.0.1`. Native Java startup defaults to `8080`.
 
 Do not send provider keys to browsers, commit `.env`, print Authorization headers, or log raw inputs/responses.
 

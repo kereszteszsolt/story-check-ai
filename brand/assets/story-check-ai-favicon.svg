@@ -1,0 +1,12 @@
+<!-- SPDX-FileCopyrightText: 2026 Keresztes Zsolt <https://kereszteszsolt.hu>
+SPDX-License-Identifier: Apache-2.0 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="StoryCheck AI">
+  <rect width="32" height="32" rx="7" fill="#254e48"/>
+  <rect x="5" y="5" width="13" height="20" rx="2" fill="#fffdf8" transform="rotate(-9 11 15)"/>
+  <path d="M8 9h6m-6 4h7" stroke="#a4cfb8" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="25" cy="6" r="3" fill="#f4cd74"/>
+  <path d="m22 23 5 5" stroke="#a4cfb8" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="18" cy="19" r="8.5" fill="#254e48"/>
+  <circle cx="18" cy="19" r="6.5" fill="#dceee0"/>
+  <path d="m14.5 19 2.5 2.5 4.5-5.5" fill="none" stroke="#347b5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

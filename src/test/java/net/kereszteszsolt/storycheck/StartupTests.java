@@ -8,6 +8,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
@@ -41,7 +43,29 @@ class StartupTests {
         HttpResponse<String> javascript = get("/app.js", "*/*");
         assertEquals(200, javascript.statusCode());
         assertTrue(javascript.headers().firstValue("Content-Type").orElseThrow().contains("javascript"));
+        assertEquals(200, get("/branding.js", "*/*").statusCode());
         assertEquals(404, get("/browser-tests/review-ui.mjs", "*/*").statusCode());
+        assertEquals(404, get("/brand/README.md", "*/*").statusCode());
+    }
+
+    @Test
+    void displayBrandingIsPackagedWithTheApplication() throws Exception {
+        HttpResponse<String> response = get("/brand/branding.json", "application/json");
+        assertEquals(200, response.statusCode());
+        assertTrue(response.headers().firstValue("Content-Type").orElseThrow().startsWith("application/json"));
+        assertTrue(response.body().contains("\"appName\": \"StoryCheck AI\""));
+        assertTrue(response.body().contains("assets/story-check-ai-icon.svg"));
+        assertTrue(response.body().contains("assets/story-check-ai-favicon.svg"));
+        assertTrue(response.body().contains("\"appDescription\""));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"story-check-ai-poster.svg", "story-check-ai-icon.svg", "story-check-ai-favicon.svg"})
+    void vectorArtworkIsServedWithItsImageContentType(String filename) throws Exception {
+        HttpResponse<String> response = get("/brand/assets/" + filename, "image/svg+xml");
+        assertEquals(200, response.statusCode());
+        assertTrue(response.headers().firstValue("Content-Type").orElseThrow().startsWith("image/svg+xml"));
+        assertTrue(response.body().contains("<svg"));
     }
 
     @Test

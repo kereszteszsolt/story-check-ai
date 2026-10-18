@@ -3,3 +3,7 @@
 !src/
 !src/**
 !LICENSE
+!brand/
+!brand/branding.json
+!brand/assets/
+!brand/assets/**

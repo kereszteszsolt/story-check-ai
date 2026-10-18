@@ -1,0 +1,23 @@
+<!-- SPDX-FileCopyrightText: 2026 Keresztes Zsolt <https://kereszteszsolt.hu>
+SPDX-License-Identifier: Apache-2.0 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">StoryCheck AI icon</title>
+  <desc id="desc">A story sheet and golden question bubble behind a teal magnifying glass with a checkmark.</desc>
+  <rect width="128" height="128" rx="29" fill="#254e48"/>
+  <g transform="rotate(-9 53 67)">
+    <rect x="27" y="25" width="56" height="80" rx="7" fill="#143e38"/>
+    <rect x="23" y="21" width="56" height="80" rx="7" fill="#fffdf8"/>
+    <path d="M34 35h20" stroke="#254e48" stroke-width="5" stroke-linecap="round"/>
+    <path d="M34 47h34M34 58h24M44 74h22M44 87h16" stroke="#cad9cd" stroke-width="4" stroke-linecap="round"/>
+    <rect x="32" y="70" width="7" height="7" rx="2" fill="#a4cfb8"/>
+    <rect x="32" y="83" width="7" height="7" rx="2" fill="#f7d57c"/>
+  </g>
+  <path d="M89 17h15a8 8 0 0 1 8 8v11a8 8 0 0 1-8 8h-7l-9 7v-8a8 8 0 0 1-7-8V25a8 8 0 0 1 8-8Z" fill="#f4cd74"/>
+  <path d="M92 26a5 5 0 0 1 10 0c0 4-5 4-5 8m0 5h.01" fill="none" stroke="#765a25" stroke-width="3" stroke-linecap="round"/>
+  <path d="m91 91 17 18" stroke="#143e38" stroke-width="14" stroke-linecap="round"/>
+  <path d="m96 96 12 13" stroke="#a4cfb8" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="77" cy="76" r="29" fill="#254e48"/>
+  <circle cx="77" cy="76" r="23" fill="#dceee0"/>
+  <path d="m65 76 9 9 16-19" fill="none" stroke="#347b5e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M59 70a18 18 0 0 1 10-10" fill="none" stroke="#fffdf8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

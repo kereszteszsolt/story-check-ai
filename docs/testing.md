@@ -24,10 +24,10 @@ With Node.js 24 and the [Playwright browser/system libraries](https://playwright
 ```bash
 npm install --prefix /tmp/storycheck-browser --no-save playwright@1.62.1
 node /tmp/storycheck-browser/node_modules/playwright/cli.js install chromium
-STC_BASE_URL=http://127.0.0.1:18081 PLAYWRIGHT_MODULE=/tmp/storycheck-browser/node_modules/playwright node browser-tests/review-ui.mjs
+STC_BASE_URL=http://127.0.0.1:33070 PLAYWRIGHT_MODULE=/tmp/storycheck-browser/node_modules/playwright node browser-tests/review-ui.mjs
 ```
 
-Screenshots go to `/tmp/stc004-browser-artifacts` by default; override `STC_BROWSER_ARTIFACTS` if needed. They show fixed fixture content, not live model output. The script checks real clipboard access plus denied/unavailable clipboard fallback, and accelerates the client timeout only within its test page.
+Screenshots go to `/tmp/stc004-browser-artifacts` by default; override `STC_BROWSER_ARTIFACTS` if needed. They show fixed fixture content, not live model output. The script checks real clipboard access plus denied/unavailable clipboard fallback, and accelerates the client timeout only within its test page. It also checks About branding, backdrop blur, tooltip/focus/Escape handling, draft/result preservation, pending-review focus and mobile overflow. Set `STC_CHROMIUM_PATH` if using an existing Chromium executable outside Playwright's default browser location.
 
 `.github/workflows/verify.yml` runs Maven verification on push and pull request with Java 21, read-only repository permissions, blank production model/key settings and no repository secrets. Browser regression is an optional local check. A local command passing does not prove that the hosted workflow ran.
 

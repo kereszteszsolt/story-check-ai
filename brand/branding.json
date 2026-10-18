@@ -1,0 +1,15 @@
+{
+  "appName": "StoryCheck AI",
+  "appWebsite": "",
+  "appGithubUrl": "https://github.com/kereszteszsolt/story-check-ai",
+  "authorName": "Keresztes Zsolt",
+  "authorWebsite": "https://kereszteszsolt.hu",
+  "authorGithub": "https://github.com/kereszteszsolt",
+  "authorWaysToSupportUrl": "https://kereszteszsolt.hu/ways-to-support",
+  "authorBuyMeACoffeeUrl": "https://buymeacoffee.com/kereszteszsolt",
+  "license": "Apache-2.0",
+  "appFavicon": "assets/story-check-ai-favicon.svg",
+  "appIcon": "assets/story-check-ai-icon.svg",
+  "appPoster": "assets/story-check-ai-poster.svg",
+  "appDescription": "Review a user story, clarify acceptance criteria and questions, and copy test suggestions as Markdown."
+}
