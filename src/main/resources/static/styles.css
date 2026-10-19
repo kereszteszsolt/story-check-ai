@@ -22,8 +22,8 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .skip-link:focus { top: .5rem; }
 .page-header, main, footer { width: min(1180px, calc(100% - 4rem)); margin-inline: auto; }
 .page-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #dce5de; }
-.brand { display: flex; align-items: center; gap: .75rem; }
-.brand-mark { display: block; width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; }
+.app-identity { display: flex; align-items: center; gap: .75rem; }
+.app-icon { display: block; width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; }
 .header-actions { display: flex; align-items: center; gap: 1rem; }
 h1 { font-size: 1.2rem; letter-spacing: -.04em; margin: 0; }
 .intro { padding: 1.4rem 0 1.25rem; }

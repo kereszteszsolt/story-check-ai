@@ -43,13 +43,13 @@ class StartupTests {
         HttpResponse<String> javascript = get("/app.js", "*/*");
         assertEquals(200, javascript.statusCode());
         assertTrue(javascript.headers().firstValue("Content-Type").orElseThrow().contains("javascript"));
-        assertEquals(200, get("/branding.js", "*/*").statusCode());
+        assertEquals(200, get("/about.js", "*/*").statusCode());
         assertEquals(404, get("/browser-tests/review-ui.mjs", "*/*").statusCode());
         assertEquals(404, get("/brand/README.md", "*/*").statusCode());
     }
 
     @Test
-    void displayBrandingIsPackagedWithTheApplication() throws Exception {
+    void appInfoIsPackagedWithTheApplication() throws Exception {
         HttpResponse<String> response = get("/brand/branding.json", "application/json");
         assertEquals(200, response.statusCode());
         assertTrue(response.headers().firstValue("Content-Type").orElseThrow().startsWith("application/json"));

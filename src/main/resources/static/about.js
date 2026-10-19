@@ -144,60 +144,60 @@ function externalLink(label, href, description, tooltipWidth = 320, languages = 
     return link;
 }
 
-function copyright(container, brand) {
+function copyright(container, appInfo) {
     const link = externalLink('Apache-2.0', licenseUrl, 'Read the Apache-2.0 license.');
     link.className = 'license-link';
-    container.replaceChildren(document.createTextNode(`© ${new Date().getFullYear()} ${brand.authorName}, `), link);
+    container.replaceChildren(document.createTextNode(`© ${new Date().getFullYear()} ${appInfo.authorName}, `), link);
     container.hidden = false;
 }
 
-async function loadBrand() {
+async function loadAppInfo() {
     const response = await fetch('/brand/branding.json', { signal: AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('Branding unavailable');
-    const brand = await response.json();
+    const appInfo = await response.json();
     if (['appName', 'authorName', 'appDescription', 'appTagline', 'supportRemarkText']
-        .some(key => typeof brand[key] !== 'string' || !brand[key].trim())
-        || !Array.isArray(brand.authorWebsiteLanguages)
-        || brand.authorWebsiteLanguages.some(language => typeof language !== 'string' || !language.trim())) {
+        .some(key => typeof appInfo[key] !== 'string' || !appInfo[key].trim())
+        || !Array.isArray(appInfo.authorWebsiteLanguages)
+        || appInfo.authorWebsiteLanguages.some(language => typeof language !== 'string' || !language.trim())) {
         throw new Error('Invalid branding');
     }
-    document.title = brand.appName;
-    document.querySelector('.brand h1').textContent = brand.appName;
-    document.querySelector('meta[name="description"]').content = brand.appDescription;
-    document.getElementById('about-heading').textContent = `About ${brand.appName}`;
-    document.getElementById('about-description').textContent = brand.appDescription;
-    document.getElementById('app-tagline').textContent = brand.appTagline;
+    document.title = appInfo.appName;
+    document.querySelector('.app-identity h1').textContent = appInfo.appName;
+    document.querySelector('meta[name="description"]').content = appInfo.appDescription;
+    document.getElementById('about-heading').textContent = `About ${appInfo.appName}`;
+    document.getElementById('about-description').textContent = appInfo.appDescription;
+    document.getElementById('app-tagline').textContent = appInfo.appTagline;
     const supportRemark = document.getElementById('support-remark');
-    const sentenceEnd = brand.supportRemarkText.indexOf('. ');
-    supportRemark.textContent = brand.supportRemarkText;
+    const sentenceEnd = appInfo.supportRemarkText.indexOf('. ');
+    supportRemark.textContent = appInfo.supportRemarkText;
     if (sentenceEnd !== -1) {
-        supportRemark.replaceChildren(document.createTextNode(brand.supportRemarkText.slice(0, sentenceEnd + 1)),
-            document.createElement('br'), document.createTextNode(brand.supportRemarkText.slice(sentenceEnd + 2)));
+        supportRemark.replaceChildren(document.createTextNode(appInfo.supportRemarkText.slice(0, sentenceEnd + 1)),
+            document.createElement('br'), document.createTextNode(appInfo.supportRemarkText.slice(sentenceEnd + 2)));
     }
-    const languages = brand.authorWebsiteLanguages.map(language => language.trim()).join(' | ');
+    const languages = appInfo.authorWebsiteLanguages.map(language => language.trim()).join(' | ');
     const languageList = languages ? `${languages}.` : '';
     const languageNote = languages ? ` Available in ${languageList}` : '';
     const authorDescription = `Author's website.${languageNote}`;
     for (const [id, field] of [['app-icon', 'appIcon'], ['about-poster', 'appPoster']]) {
         const image = document.getElementById(id);
-        const url = assetUrl(brand[field]);
+        const url = assetUrl(appInfo[field]);
         image.hidden = !url;
         if (url) image.src = url;
     }
-    document.getElementById('about-poster').alt = `${brand.appName} project poster`;
+    document.getElementById('about-poster').alt = `${appInfo.appName} project poster`;
     const favicon = document.querySelector('link[rel="icon"]');
-    const faviconUrl = assetUrl(brand.appFavicon);
+    const faviconUrl = assetUrl(appInfo.appFavicon);
     if (faviconUrl) favicon.href = faviconUrl;
     else favicon.remove();
-    const authorWebsite = linkUrl(brand.authorWebsite);
+    const authorWebsite = linkUrl(appInfo.authorWebsite);
     const authorDomain = authorWebsite ? new URL(authorWebsite).hostname : '';
     const links = [
         ['website', 'globe', authorDomain, authorWebsite, authorDescription],
-        ['source', 'code', 'Source', brand.appGithubUrl, `View the ${brand.appName} source code on GitHub.`],
-        ['profile', 'profile', 'GitHub profile', brand.authorGithub, "The author's GitHub profile."],
-        ['project', 'globe', 'Project website', brand.appWebsite, `Visit the ${brand.appName} website.`],
-        ['coffee', 'coffee', 'Buy me a Coffee', brand.authorBuyMeACoffeeUrl, 'Support the author with a coffee on Buy Me a Coffee.'],
-        ['support', 'heart', 'Ways to support', brand.authorWaysToSupportUrl, `Ways to support the author.${languageNote}`]
+        ['source', 'code', 'Source', appInfo.appGithubUrl, `View the ${appInfo.appName} source code on GitHub.`],
+        ['profile', 'profile', 'GitHub profile', appInfo.authorGithub, "The author's GitHub profile."],
+        ['project', 'globe', 'Project website', appInfo.appWebsite, `Visit the ${appInfo.appName} website.`],
+        ['coffee', 'coffee', 'Buy me a Coffee', appInfo.authorBuyMeACoffeeUrl, 'Support the author with a coffee on Buy Me a Coffee.'],
+        ['support', 'heart', 'Ways to support', appInfo.authorWaysToSupportUrl, `Ways to support the author.${languageNote}`]
     ];
     for (const [id, icon, label, href, description] of links) {
         if (!linkUrl(href)) continue;
@@ -212,8 +212,8 @@ async function loadBrand() {
         link.prepend(svg);
         document.getElementById(['coffee', 'support'].includes(id) ? 'support-links' : 'project-links').append(link);
     }
-    copyright(document.getElementById('about-copyright'), brand);
-    copyright(document.getElementById('footer-copyright'), brand);
+    copyright(document.getElementById('about-copyright'), appInfo);
+    copyright(document.getElementById('footer-copyright'), appInfo);
     if (authorWebsite) {
         const website = document.getElementById('author-website');
         website.textContent = authorDomain;
@@ -224,6 +224,6 @@ async function loadBrand() {
     aboutButton.disabled = false;
 }
 
-loadBrand().catch(() => {
+loadAppInfo().catch(() => {
     aboutButton.title = 'About is unavailable. Reload the page to try again.';
 });
