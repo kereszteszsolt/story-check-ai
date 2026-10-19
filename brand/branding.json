@@ -1,15 +1,17 @@
 {
   "appName": "StoryCheck AI",
   "appWebsite": "",
+  "appTagline": "From a story to something testable.",
+  "appDescription": "Review a user story, clarify acceptance criteria and questions, and copy test suggestions as Markdown.",
+  "supportRemarkText": "Support is voluntary and does not create any obligation, priority service, special access or other consideration. Thank you for your attention, and also if you support my work in any way!",
   "appGithubUrl": "https://github.com/kereszteszsolt/story-check-ai",
   "authorName": "Keresztes Zsolt",
   "authorWebsite": "https://kereszteszsolt.hu",
+  "authorWebsiteLanguages": ["hu", "en", "ro", "de"],
   "authorGithub": "https://github.com/kereszteszsolt",
   "authorWaysToSupportUrl": "https://kereszteszsolt.hu/ways-to-support",
   "authorBuyMeACoffeeUrl": "https://buymeacoffee.com/kereszteszsolt",
-  "license": "Apache-2.0",
   "appFavicon": "assets/story-check-ai-favicon.svg",
   "appIcon": "assets/story-check-ai-icon.svg",
-  "appPoster": "assets/story-check-ai-poster.svg",
-  "appDescription": "Review a user story, clarify acceptance criteria and questions, and copy test suggestions as Markdown."
+  "appPoster": "assets/story-check-ai-poster.svg"
 }

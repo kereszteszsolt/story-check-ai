@@ -32,7 +32,7 @@ function scheduleHide() {
     }, 120);
 }
 
-function showTooltip(anchor, description, preferredWidth) {
+function showTooltip(anchor, description, preferredWidth, languages) {
     clearTimeout(hideTimer);
     if (activeTooltip?.anchor === anchor) return;
     hideTooltip();
@@ -41,8 +41,7 @@ function showTooltip(anchor, description, preferredWidth) {
     bubble.className = 'link-tooltip';
     bubble.setAttribute('role', 'tooltip');
     bubble.textContent = description;
-    const languages = 'hu | en | ro | de.';
-    const languageIndex = description.indexOf(languages);
+    const languageIndex = languages ? description.indexOf(languages) : -1;
     if (languageIndex !== -1) {
         const languageList = document.createElement('span');
         languageList.className = 'tooltip-languages';
@@ -76,9 +75,9 @@ function showTooltip(anchor, description, preferredWidth) {
     bubble.style.setProperty('--tooltip-arrow', `${Math.max(12, Math.min(center - left, size.width - 12))}px`);
 }
 
-function tooltip(anchor, description, preferredWidth = 320) {
-    anchor.addEventListener('mouseenter', () => showTooltip(anchor, description, preferredWidth));
-    anchor.addEventListener('focus', () => showTooltip(anchor, description, preferredWidth));
+function tooltip(anchor, description, preferredWidth = 320, languages = '') {
+    anchor.addEventListener('mouseenter', () => showTooltip(anchor, description, preferredWidth, languages));
+    anchor.addEventListener('focus', () => showTooltip(anchor, description, preferredWidth, languages));
     anchor.addEventListener('mouseleave', scheduleHide);
     anchor.addEventListener('blur', scheduleHide);
 }
@@ -135,18 +134,18 @@ function linkUrl(value) {
     } catch { return ''; }
 }
 
-function externalLink(label, href, description, tooltipWidth = 320) {
+function externalLink(label, href, description, tooltipWidth = 320, languages = '') {
     const link = document.createElement('a');
     link.textContent = label;
     link.href = href;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    tooltip(link, `${description}\n${href}`, tooltipWidth);
+    tooltip(link, `${description}\n${href}`, tooltipWidth, languages);
     return link;
 }
 
 function copyright(container, brand) {
-    const link = externalLink(brand.license, licenseUrl, `Read the ${brand.license} license.`);
+    const link = externalLink('Apache-2.0', licenseUrl, 'Read the Apache-2.0 license.');
     link.className = 'license-link';
     container.replaceChildren(document.createTextNode(`© ${new Date().getFullYear()} ${brand.authorName}, `), link);
     container.hidden = false;
@@ -156,7 +155,10 @@ async function loadBrand() {
     const response = await fetch('/brand/branding.json', { signal: AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('Branding unavailable');
     const brand = await response.json();
-    if (['appName', 'authorName', 'appDescription', 'license'].some(key => typeof brand[key] !== 'string' || !brand[key].trim())) {
+    if (['appName', 'authorName', 'appDescription', 'appTagline', 'supportRemarkText']
+        .some(key => typeof brand[key] !== 'string' || !brand[key].trim())
+        || !Array.isArray(brand.authorWebsiteLanguages)
+        || brand.authorWebsiteLanguages.some(language => typeof language !== 'string' || !language.trim())) {
         throw new Error('Invalid branding');
     }
     document.title = brand.appName;
@@ -164,6 +166,18 @@ async function loadBrand() {
     document.querySelector('meta[name="description"]').content = brand.appDescription;
     document.getElementById('about-heading').textContent = `About ${brand.appName}`;
     document.getElementById('about-description').textContent = brand.appDescription;
+    document.getElementById('app-tagline').textContent = brand.appTagline;
+    const supportRemark = document.getElementById('support-remark');
+    const sentenceEnd = brand.supportRemarkText.indexOf('. ');
+    supportRemark.textContent = brand.supportRemarkText;
+    if (sentenceEnd !== -1) {
+        supportRemark.replaceChildren(document.createTextNode(brand.supportRemarkText.slice(0, sentenceEnd + 1)),
+            document.createElement('br'), document.createTextNode(brand.supportRemarkText.slice(sentenceEnd + 2)));
+    }
+    const languages = brand.authorWebsiteLanguages.map(language => language.trim()).join(' | ');
+    const languageList = languages ? `${languages}.` : '';
+    const languageNote = languages ? ` Available in ${languageList}` : '';
+    const authorDescription = `Author's website.${languageNote}`;
     for (const [id, field] of [['app-icon', 'appIcon'], ['about-poster', 'appPoster']]) {
         const image = document.getElementById(id);
         const url = assetUrl(brand[field]);
@@ -178,16 +192,17 @@ async function loadBrand() {
     const authorWebsite = linkUrl(brand.authorWebsite);
     const authorDomain = authorWebsite ? new URL(authorWebsite).hostname : '';
     const links = [
-        ['website', 'globe', authorDomain, authorWebsite, "Author's website. Available in hu | en | ro | de."],
+        ['website', 'globe', authorDomain, authorWebsite, authorDescription],
         ['source', 'code', 'Source', brand.appGithubUrl, `View the ${brand.appName} source code on GitHub.`],
         ['profile', 'profile', 'GitHub profile', brand.authorGithub, "The author's GitHub profile."],
         ['project', 'globe', 'Project website', brand.appWebsite, `Visit the ${brand.appName} website.`],
         ['coffee', 'coffee', 'Buy me a Coffee', brand.authorBuyMeACoffeeUrl, 'Support the author with a coffee on Buy Me a Coffee.'],
-        ['support', 'heart', 'Ways to support', brand.authorWaysToSupportUrl, 'Ways to support the author. Available in hu | en | ro | de.']
+        ['support', 'heart', 'Ways to support', brand.authorWaysToSupportUrl, `Ways to support the author.${languageNote}`]
     ];
     for (const [id, icon, label, href, description] of links) {
         if (!linkUrl(href)) continue;
-        const link = externalLink(label, href, description, id === 'support' ? 368 : 320);
+        const link = externalLink(label, href, description, id === 'support' ? 368 : 320,
+            ['website', 'support'].includes(id) ? languageList : '');
         link.className = `about-action${id === 'coffee' ? ' coffee-action' : ''}`;
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('viewBox', '0 0 24 24');
@@ -204,7 +219,7 @@ async function loadBrand() {
         website.textContent = authorDomain;
         website.href = authorWebsite;
         website.hidden = false;
-        tooltip(website, `Author's website. Available in hu | en | ro | de.\n${authorWebsite}`);
+        tooltip(website, `${authorDescription}\n${authorWebsite}`, 320, languageList);
     }
     aboutButton.disabled = false;
 }

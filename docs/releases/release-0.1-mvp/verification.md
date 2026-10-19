@@ -405,3 +405,75 @@ The existing **27 browser regression scenarios passed** again on the same final 
 The maintainer explicitly approved committing the completed maintenance adjustments. Reviewed the complete worktree and staged changes on `fix_patch_20261018`; no blocking issue was found. A credential audit covered 72 tracked/untracked files and all 20 staged files without printing values: configured secrets/private-key patterns were absent, `.env` remains ignored and unstaged, and the example API key is blank. Staged content matches reviewed source after normal Git line-ending normalization; existing worktree CRLF is preserved.
 
 The final application/build/test sources are unchanged since the successful 167-test Maven build, 27 Chromium scenarios, seven-viewport layout check and runtime source/JAR comparison above. Those checks were not repeated for this documentation-only commit preparation. CRLF-aware staged whitespace checks passed. Approved commit message: `fix: integrate branding and polish the review layout`. Commit identity is recorded in Git history. No push was requested.
+
+### Footer alignment and header polish — 2026-10-19
+
+User-requested STC-004 maintenance in `index.html` and `styles.css`: use a viewport-height flex column so the initial desktop footer reaches the screen bottom, let the introductory sentence use the available width, remove the User story review demo badge and give About a rounded pale-green button with a decorative information icon. Content can still grow and scroll naturally, and the story field retains native vertical resizing.
+
+Actual commands:
+
+```bash
+docker compose build app
+docker compose up -d --force-recreate --wait --wait-timeout 60 app
+LD_LIBRARY_PATH=/tmp/storycheck-browser-libs/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node /tmp/storycheck-footer-layout.cjs
+docker compose ps
+git -c core.autocrlf=true -c core.whitespace=cr-at-eol diff --check
+```
+
+The Docker build ran Maven `verify`: **167 tests, zero failures/errors/skips**. Image: `sha256:8f8831229615d216ba12dd78fefd22cd691f547997b50e50da793c041367f2c7`. The recreated app is running on `127.0.0.1:33070 -> 8080/tcp`. A Python `urllib.request` check confirmed that both changed HTTP assets match source bytes and `/api/health` returns `{"status":"ok"}`.
+
+Focused Chromium checks passed **nine viewports** against the rebuilt app: 1529×964 (the supplied screenshot size), 1440×900, 1366×768, 1280×720, 1024×768, 1078×929, 1920×1080, 390×844 and 320×844. All seven desktop starting screens fit without scrolling at normal zoom; footer bottoms equal viewport heights, the author website ends 8 or 16px above the bottom, and the introductory sentence occupies one line. Mobile content wraps and scrolls with no horizontal overflow. Growing the desktop story field to 900px moves the footer below the content without overlap. About opens with Enter, closes with Escape and restores button focus at every tested size. No uncaught browser errors occurred. Desktop and 390px screenshots under `/tmp/storycheck-footer-layout/` were visually inspected.
+
+The browser checks used synthetic model-list responses and blocked all non-GET and external requests. Temporary Playwright and extracted Chromium libraries live only under `/tmp`; no application dependencies were added. The diff review and CRLF-aware whitespace check passed, preserving existing CRLF source files. The full 27-scenario browser regression suite was not rerun for this small layout change. Live providers, other browser engines, hosted CI and public deployment: **Not run**. No commit or push was made. Proposed commit message: `fix: align the footer and polish header controls`.
+
+### Simple About control and explicit Docker defaults — 2026-10-19
+
+User-requested maintenance replaces the decorative About pill with a plain text button, retaining keyboard focus and a subtle hover background. The support notice keeps its exact wording, with an explicit `<br>` before the second sentence. `compose.yaml` now states `restart: "no"` explicitly; its existing localhost-only publication is retained. README documents restart behavior and clicking outside About. The existing backdrop-click handler in `branding.js` already supports dismissal and required no change.
+
+Actual commands:
+
+```bash
+docker compose config --quiet
+docker compose build app > /tmp/storycheck-final-build.log 2>&1
+docker compose up -d --force-recreate --wait --wait-timeout 60 app
+python3 /tmp/storycheck-compose-check.py
+LD_LIBRARY_PATH=/tmp/storycheck-browser-libs/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node /tmp/storycheck-simple-about.cjs
+git -c core.autocrlf=true -c core.whitespace=cr-at-eol diff --check
+```
+
+Final Docker build/Maven `verify`: **167 tests, zero failures/errors/skips**. The final image is `sha256:2ff8c43084b7d54e0f705d885b22ebbe9b2cd3bddb2e3b0098474756f752683e`. An earlier build completed before the late support-text request; the final rebuild above includes that additional change. The app was recreated successfully. A credential-safe Python audit checked resolved Compose and runtime inspection: exactly `127.0.0.1:33070 -> 8080/tcp` in both port-binding fields, restart policy `{"Name":"no","MaximumRetryCount":0}`, no publish-all or host networking, and a running container. Both changed HTTP assets match current source bytes; `/api/health` is healthy. No Docker daemon restart was simulated.
+
+Focused Chromium checks passed the same **nine desktop/mobile viewports** listed above. They verified the plain button has no icon, border, fill or shadow; Enter/Escape opening/closing and focus return; clicking inside keeps About open; clicking the backdrop closes it, restores page scrolling and preserves draft/model selection; and the support text has the requested rendered line break. The temporary check initially asserted scroll restoration before the native dialog's asynchronous `close` event; waiting for that event's visible effect resolved the check without application changes. Footer alignment, single-line desktop introduction, normal mobile scrolling and the vertically resizable story field still pass. No uncaught browser errors occurred. Desktop start/About and 390px About screenshots under `/tmp/storycheck-simple-about/` were visually inspected.
+
+Model choices were synthetic browser fixtures; all non-GET and external browser requests were blocked. No credentials were printed or changed. The full browser regression suite, live model calls, other browser engines, hosted CI and public deployment: **Not run**. Existing CRLF files are preserved and diff whitespace checks passed. No commit or push was made. Proposed commit message: `fix: simplify About and make local Docker defaults explicit`.
+
+### Shared branding structure — 2026-10-19
+
+User-requested STC-004 maintenance adapts the supplied 15-field branding structure and field order to StoryCheck AI in `brand/branding.json`. Existing StoryCheck names, description, repository URL and artwork paths are retained. `appTagline` supplies the existing main heading, `supportRemarkText` supplies the exact support notice with its second sentence on a new line, and `authorWebsiteLanguages` supplies the website/support tooltip language list without hardcoded languages. Text is inserted through DOM text nodes. Empty language arrays omit availability notes, and a single-sentence support notice does not add a line break. The pre-existing removal of license metadata from the catalog is preserved; Apache-2.0 remains determined by the repository. Branding and root README documentation were updated.
+
+Actual commands:
+
+```bash
+/home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node --check src/main/resources/static/branding.js
+/home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node --check browser-tests/review-ui.mjs
+docker compose config --quiet
+docker compose build app > /tmp/storycheck-branding-structure-build.log 2>&1
+docker compose up -d --force-recreate --wait --wait-timeout 60 app
+python3 /tmp/storycheck-branding-runtime.py
+docker run --rm -d --name storycheck-branding-schema-check --restart=no -p 127.0.0.1:33071:8080 -e APP_BIND_ADDRESS=0.0.0.0 story-check-ai-app
+STC_BASE_URL=http://127.0.0.1:33071 STC_BROWSER_ARTIFACTS=/tmp/storycheck-branding-structure-browser STC_CHROMIUM_PATH=/home/zsolti-wsl/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome PLAYWRIGHT_MODULE=/tmp/storycheck-layout-browser/node_modules/playwright LD_LIBRARY_PATH=/tmp/storycheck-browser-libs/extracted/usr/lib/x86_64-linux-gnu /home/zsolti-wsl/.nvm/versions/node/v24.18.0/bin/node browser-tests/review-ui.mjs
+docker stop storycheck-branding-schema-check
+git -c core.autocrlf=true -c core.whitespace=cr-at-eol diff --check
+```
+
+Docker build/Maven `verify`: **167 tests, zero failures/errors/skips**. Image: `sha256:1e98d78c87dd034a4af096fb36174c7653d085b13bdda4802d709604d10810cb`. The runtime audit confirms all **four HTML/CSS/branding JS/JSON HTTP assets match current source bytes**, health is OK, the only published address remains `127.0.0.1:33070 -> 8080/tcp` and restart policy remains `no`. The temporary app on localhost `33071` had no provider configuration and was removed after testing. Its first health poll preceded readiness and received a connection reset; the subsequent health check succeeded before browser execution.
+
+**29 Chromium browser scenarios passed**, including the existing review/copy/error/About/mobile flows and two additional branding-fixture cases. Custom tagline/support text containing HTML-like content stays literal, ordered `fr | en` languages replace the default list in both modal and footer tooltips, empty languages omit availability notes, and one support sentence remains intact. Default support wording and the requested line break are verified. Desktop and 320px About screenshots under `/tmp/storycheck-branding-structure-browser/` were visually inspected. JavaScript syntax and diff checks passed; each edited file retains its current LF/CRLF format. No artwork, credentials, backend logic, additional service or frontend dependency was changed.
+
+Provider responses were fixed browser fixtures; external origins were blocked. Live providers, other browser engines, hosted CI and public deployment: **Not run**. No commit or push was made. Proposed commit message: `fix: adopt the shared StoryCheck branding structure`.
+
+### UI/branding maintenance commit review — 2026-10-19
+
+The maintainer explicitly approved committing the completed layout, About, shared-branding and Docker-default adjustments on `fix_patch_20261018`. Reviewed all nine changed files across the worktree and index; no blocking issue was found. JavaScript syntax and CRLF-aware whitespace checks pass. A credential audit of 72 tracked/untracked files found no configured secrets or private-key patterns without exposing values; `.env` remains ignored and untracked. Staged content receives the same audit and is compared with reviewed source before the authorized commit.
+
+The current runtime audit again confirms the final four UI/branding HTTP assets match source, health is OK, publication is only `127.0.0.1:33070` and restart policy is `no`. Application and browser-test sources are unchanged since the successful **167-test Maven build and 29 Chromium scenarios** above; those checks were not repeated for commit preparation. The earlier nine-viewport layout evidence remains recorded above. Approved commit message: `fix: polish review UI, branding and Docker defaults`. Commit identity is recorded in Git history. No push was requested.

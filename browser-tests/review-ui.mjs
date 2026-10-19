@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.env.STC_BASE_URL || 'http://127.0.0.1:33070';
 assert(['localhost', '127.0.0.1', '[::1]'].includes(new URL(base).hostname), 'Use a loopback test app.');
 const artifacts = process.env.STC_BROWSER_ARTIFACTS || '/tmp/stc004-browser-artifacts';
+const displayBrand = JSON.parse(await readFile(new URL('../brand/branding.json', import.meta.url), 'utf8'));
 await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch({ headless: true, executablePath: process.env.STC_CHROMIUM_PATH });
 const models = [
@@ -25,10 +26,11 @@ const review = {
 const errors = [];
 let passed = 0;
 
-async function run(name, test, { handler, viewport = { width: 1366, height: 1000 }, realApi = false, init } = {}) {
+async function run(name, test, { handler, viewport = { width: 1366, height: 1000 }, realApi = false, init, branding } = {}) {
     const context = await browser.newContext({ viewport, permissions: ['clipboard-read', 'clipboard-write'] });
     await context.route('**/*', route => new URL(route.request().url()).origin === new URL(base).origin
         ? route.continue() : route.abort());
+    if (branding) await context.route('**/brand/branding.json', route => route.fulfill({ json: branding }));
     if (init) await context.addInitScript(init);
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
@@ -230,6 +232,9 @@ try {
         await dialog.waitFor();
         assert.equal(await dialog.locator('h2').textContent(), `About ${brand.appName}`);
         assert.equal(await dialog.locator('#about-description').textContent(), brand.appDescription);
+        assert.equal(await page.locator('#app-tagline').textContent(), brand.appTagline);
+        assert.equal((await dialog.locator('#support-remark').innerText()).replace(/\s+/g, ' '), brand.supportRemarkText);
+        assert.equal(await dialog.locator('#support-remark br').count(), 1);
         assert.equal(await page.locator('#app-icon').getAttribute('src'), `/brand/${brand.appIcon}`);
         assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'), `/brand/${brand.appFavicon}`);
         await dialog.locator('#about-poster').evaluate(img => img.decode());
@@ -247,11 +252,11 @@ try {
             assert.equal(await link.getAttribute('rel'), 'noopener noreferrer');
         }
         assert.equal(await dialog.locator('#support-links a').count(), 2);
-        assert((await page.locator('#footer-copyright').textContent()).includes(`© ${new Date().getFullYear()} ${brand.authorName}, ${brand.license}`));
+        assert((await page.locator('#footer-copyright').textContent()).includes(`© ${new Date().getFullYear()} ${brand.authorName}, Apache-2.0`));
         assert.equal(await page.locator('#author-website').getAttribute('href'), brand.authorWebsite);
         assert.equal(await dialog.getByRole('link', { name: 'Project website', exact: true }).count(), 0);
         await website.focus();
-        assert((await dialog.getByRole('tooltip').textContent()).includes('hu | en | ro | de.'));
+        assert((await dialog.getByRole('tooltip').textContent()).includes(`${brand.authorWebsiteLanguages.join(' | ')}.`));
         assert((await dialog.getByRole('tooltip').textContent()).endsWith(brand.authorWebsite));
         await page.keyboard.press('Escape');
         assert.equal(await dialog.getByRole('tooltip').count(), 0);
@@ -264,6 +269,39 @@ try {
         assert.equal(await page.locator('#model').inputValue(), '0');
         assert.equal(calls.filter(call => call.method === 'POST').length, 0);
     });
+
+    await run('branding fields drive literal tagline, support text and language tooltips', async page => {
+        assert.equal(await page.locator('#app-tagline').textContent(), 'Fixture <img src=x onerror="window.brandingInjected=true">');
+        assert.equal(await page.locator('#app-tagline img').count(), 0);
+        await page.locator('#about-button').click();
+        const dialog = page.getByRole('dialog');
+        assert.equal(await dialog.locator('#support-remark').innerText(), 'Voluntary <script>window.brandingInjected=true</script>.\nThank you for reading this fixture!');
+        assert.equal(await dialog.locator('#support-remark script').count(), 0);
+        for (const label of ['kereszteszsolt.hu', 'Ways to support']) {
+            await dialog.getByRole('link', { name: label, exact: true }).focus();
+            assert.equal(await dialog.locator('.tooltip-languages').textContent(), 'fr | en.');
+        }
+        await page.locator('#close-about').click();
+        await page.waitForFunction(() => !document.body.classList.contains('about-open'));
+        await page.locator('#author-website').focus();
+        assert.equal(await page.locator('.tooltip-languages').textContent(), 'fr | en.');
+        assert.equal(await page.evaluate(() => window.brandingInjected), undefined);
+    }, { branding: {
+        ...displayBrand,
+        appTagline: 'Fixture <img src=x onerror="window.brandingInjected=true">',
+        supportRemarkText: 'Voluntary <script>window.brandingInjected=true</script>. Thank you for reading this fixture!',
+        authorWebsiteLanguages: ['fr', 'en']
+    } });
+
+    await run('empty branding languages omit availability notes and one support sentence stays intact', async page => {
+        await page.locator('#about-button').click();
+        const dialog = page.getByRole('dialog');
+        assert.equal(await dialog.locator('#support-remark').textContent(), 'Voluntary support is appreciated!');
+        assert.equal(await dialog.locator('#support-remark br').count(), 0);
+        await dialog.getByRole('link', { name: 'kereszteszsolt.hu', exact: true }).focus();
+        assert(!(await dialog.getByRole('tooltip').textContent()).includes('Available in'));
+        assert.equal(await dialog.locator('.tooltip-languages').count(), 0);
+    }, { branding: { ...displayBrand, supportRemarkText: 'Voluntary support is appreciated!', authorWebsiteLanguages: [] } });
 
     await run('About preserves the completed review and copy controls', async page => {
         await submit(page);
