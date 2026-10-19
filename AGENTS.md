@@ -49,3 +49,7 @@ Examples: `//` in Java/JS, `/* ... */` in CSS, `<!-- ... -->` in HTML, `#` in sh
 ## Boundaries
 
 `docs/future.md` is an idea list, not implementation approval. Do not create future releases or new agents unless asked. Existing implementation does not authorize starting later stories.
+
+## Docker runtime rules
+
+Use the GitHub repository name as the Compose project: `story-check-ai`. Publish every host port only on `127.0.0.1`, above 33000, with no port shared by another repository. The current allocation is 33070 for the app. Set `restart: "no"` for every service and disable dependency-triggered restarts. Preserve existing data/model volumes when changing a project name or recreating containers.

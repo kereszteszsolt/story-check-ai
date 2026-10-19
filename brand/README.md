@@ -7,18 +7,18 @@
 | `appName` | Display name |
 | `appTagline` | Main introductory heading |
 | `appDescription` | Browser metadata and About description |
-| `supportRemarkText` | Voluntary-support notice; the second sentence starts on a new line |
 | `appWebsite` | Project website; empty when none is configured |
 | `appGithubUrl` | Project repository |
+| `appFavicon` | Optional local favicon |
+| `appIcon` | Optional local project mark |
+| `appPoster` | Optional local project poster |
 | `authorName` | Author display name |
 | `authorWebsite` | Author website |
 | `authorWebsiteLanguages` | Ordered language codes in website/support tooltips; an empty array omits the language note |
 | `authorGithub` | Author GitHub profile |
 | `authorWaysToSupportUrl` | General ways to support the author |
 | `authorBuyMeACoffeeUrl` | Direct Buy Me a Coffee link |
-| `appFavicon` | Optional local favicon |
-| `appIcon` | Optional local project mark |
-| `appPoster` | Optional local project poster |
+| `supportRemarkText` | Voluntary-support notice; the second sentence starts on a new line |
 
 Asset paths are relative to this `brand/` directory and must stay inside `assets/`. Empty paths mean no image. These are source paths, not public URLs: consumers must package or map them to their own public base. Do not fetch remote artwork or resolve arbitrary filesystem paths.
 
